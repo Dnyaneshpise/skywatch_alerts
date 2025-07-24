@@ -1,9 +1,11 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import useLocation from '@/hooks/useLocation';
-import { fetchNearbyFlights } from '@/lib/flights/adsbClient';
+import { fetchNearbyFlights, calculatePollingInterval } from '@/lib/flights/adsbClient';
 import { FlightData } from '@/types/flight';
+import RateLimitHandler from '@/lib/flights/rateLimitHandler';
+import { ApiError } from '@/types/api';
 
 // Dynamically import Leaflet with SSR disabled
 const MapContainer = dynamic(
@@ -54,6 +56,78 @@ export default function LiveRadar() {
   const [flights, setFlights] = useState<FlightData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUserActive, setIsUserActive] = useState(true);
+  const lastActivityTime = useRef(Date.now());
+  const pollingInterval = useRef<number>(10000);
+  const fetchTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Track user activity
+  useEffect(() => {
+    const updateActivity = () => {
+      lastActivityTime.current = Date.now();
+      setIsUserActive(true);
+    };
+
+    // Events to track
+    const events = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(event => window.addEventListener(event, updateActivity));
+
+    // Check inactivity every minute
+    const inactivityCheck = setInterval(() => {
+      const inactiveTime = Date.now() - lastActivityTime.current;
+      if (inactiveTime > 5 * 60 * 1000) { // 5 minutes
+        setIsUserActive(false);
+      }
+    }, 60000);
+
+    return () => {
+      events.forEach(event => window.removeEventListener(event, updateActivity));
+      clearInterval(inactivityCheck);
+    };
+  }, []);
+
+  const fetchData = useCallback(async (forceRefresh: boolean = false) => {
+    if (!coords) return;
+
+    try {
+      setError(null);
+      const flightsData = await fetchNearbyFlights(
+        coords.latitude,
+        coords.longitude,
+        250,
+        forceRefresh
+      );
+
+      setFlights(flightsData);
+      
+      // Calculate next polling interval
+      const rateLimitHandler = RateLimitHandler.getInstance();
+      const rateLimitInfo = rateLimitHandler.getRateLimitInfo('/api/flights');
+      const hasRateLimitWarning = rateLimitHandler.shouldThrottle('/api/flights');
+      
+      pollingInterval.current = calculatePollingInterval(
+        flightsData.length,
+        isUserActive,
+        hasRateLimitWarning
+      );
+
+      setLoading(false);
+    } catch (err) {
+      console.error('Fetch error:', err);
+      
+      if (err instanceof Error) {
+        const errorMessage = (err as ApiError).code === 'RATE_LIMIT_ERROR'
+          ? 'Rate limit exceeded. Please wait a moment.'
+          : err.message;
+        
+        setError(errorMessage);
+      } else {
+        setError('An unexpected error occurred');
+      }
+      
+      setLoading(false);
+    }
+  }, [coords, isUserActive]);
 
   useEffect(() => {
     if (!coords) return;
@@ -61,39 +135,39 @@ export default function LiveRadar() {
     let mounted = true;
     const abortController = new AbortController();
 
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const flightsData = await fetchNearbyFlights(
-          coords.latitude,
-          coords.longitude
-        );
-        if (mounted) {
-          setFlights(flightsData);
-          console.log('Fetched flights:', flightsData); // Debug log
-        }
-      } catch (err) {
-        if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load flight data');
-          console.error('Fetch error:', err); // Debug log
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+    const scheduleFetch = () => {
+      if (!mounted) return;
+      
+      // Clear any existing timeout
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
       }
+
+      // Schedule next fetch
+      fetchTimeoutRef.current = setTimeout(() => {
+        fetchData(false).then(() => {
+          if (mounted) {
+            scheduleFetch();
+          }
+        });
+      }, pollingInterval.current);
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 10000);
+    // Initial fetch
+    fetchData(true).then(() => {
+      if (mounted) {
+        scheduleFetch();
+      }
+    });
 
     return () => {
       mounted = false;
-      clearInterval(interval);
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
       abortController.abort();
     };
-  }, [coords]);
+  }, [coords, fetchData]);
 
   if (locationError) {
     return (
@@ -153,7 +227,7 @@ export default function LiveRadar() {
       
       <MapContainer
         center={[coords.latitude, coords.longitude]}
-        zoom={12}  // Increased zoom level for better visibility
+        zoom={12}
         className="h-full"
       >
         <TileLayer
@@ -194,6 +268,14 @@ export default function LiveRadar() {
           </Marker>
         ))}
       </MapContainer>
+
+      {/* Rate limit warning */}
+      {RateLimitHandler.getInstance().shouldThrottle('/api/flights') && (
+        <div className="absolute bottom-4 left-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-lg">
+          <p className="font-bold">Rate Limit Warning</p>
+          <p className="text-sm">Reducing update frequency to avoid rate limits.</p>
+        </div>
+      )}
     </div>
   );
 }
