@@ -68,21 +68,21 @@ Real-time flight tracking application with proximity alerts and smart data manag
 
 1. Clone the repository:
 \`\`\`bash
-git clone https://github.com/yourusername/skywatch-alerts.git
+git clone https://github.com/jay1466/skywatch-alerts.git
 cd skywatch-alerts
 \`\`\`
 
-2. Install dependencies:
+3. Install dependencies:
 \`\`\`bash
 npm install
 \`\`\`
 
-3. Run the development server:
+4. Run the development server:
 \`\`\`bash
 npm run dev
 \`\`\`
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Architecture
 
