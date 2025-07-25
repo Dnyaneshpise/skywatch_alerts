@@ -130,7 +130,10 @@ export default function AlertsPage() {
                   Aircraft Type
                 </label>
                 <select
-                  className="w-full p-3 rounded-md border border-gray-300 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  className="w-full p-3 rounded-md border border-gray-300 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                  style={{ 
+                    boxShadow: '0 1px 2px 1px rgb(0 0 0 / 0.06)'
+                  }}
                   value={newAlert.type}
                   onChange={(e) =>
                     setNewAlert({ ...newAlert, type: e.target.value })
@@ -184,7 +187,7 @@ export default function AlertsPage() {
                   <h3 className="font-semibold text-gray-900 dark:text-white">
                     {alert.name}
                   </h3>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-2 space-y-1">
+                  <div className="text-sm text-500 dark:text-gray-400 mt-2 space-y-1">
                     <p>
                       Type:{" "}
                       {alert.type.charAt(0).toUpperCase() + alert.type.slice(1)}
