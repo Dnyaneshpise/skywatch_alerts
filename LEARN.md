@@ -51,6 +51,6 @@ cd skywatch-alerts
  ```
 
 ### 2. Run the Project
-npm install 
-npm run build 
-npm run start
+- npm install 
+- npm run build 
+- npm run start
