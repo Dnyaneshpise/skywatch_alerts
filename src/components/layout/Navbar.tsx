@@ -44,7 +44,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-2">
               <Wind className="h-8 w-8 text-cyan-400" />
-              <span className="text-2xl font-bold text-white hover:text-cyan-300 transition-colors duration-300">
+              <span className="text-2xl font-bold text-white hover:text-cyan-300 transition-colors duration-300" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                 SkyWatch
               </span>
             </Link>
@@ -92,7 +92,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between px-6 py-3 border-b border-slate-700/60">
             <Link href="/" className="flex items-center space-x-2">
               <Wind className="h-8 w-8 text-cyan-400" />
-              <span className="text-2xl font-bold text-white">SkyWatch</span>
+              <span className="text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>SkyWatch</span>
             </Link>
             <button
               onClick={() => setIsOpen(false)}
