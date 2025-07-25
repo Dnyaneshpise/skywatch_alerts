@@ -1,3 +1,4 @@
+// /components/map/LiveRadar.tsx
 'use client';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
@@ -71,12 +72,10 @@ export default function LiveRadar() {
         );
         if (mounted) {
           setFlights(flightsData);
-          console.log('Fetched flights:', flightsData); // Debug log
         }
       } catch (err) {
         if (mounted) {
           setError(err instanceof Error ? err.message : 'Failed to load flight data');
-          console.error('Fetch error:', err); // Debug log
         }
       } finally {
         if (mounted) {
@@ -141,8 +140,11 @@ export default function LiveRadar() {
   }
 
   return (
-    <div className="h-[600px] w-full relative rounded-lg overflow-hidden border">
+    // ✅ FIX 2: Added z-0 to create a new stacking context for the map.
+    // This "traps" Leaflet's high internal z-indexes below the navbar.
+    <div className="h-[600px] w-full relative rounded-lg overflow-hidden border z-0">
       {loading && (
+        // The loading overlay's z-10 is now relative to this container's z-0 context.
         <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
@@ -153,12 +155,12 @@ export default function LiveRadar() {
       
       <MapContainer
         center={[coords.latitude, coords.longitude]}
-        zoom={12}  // Increased zoom level for better visibility
+        zoom={12}
         className="h-full"
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
         <Marker position={[coords.latitude, coords.longitude]}>
