@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function AlertsPage() {
+  const MAX_DISTANCE = 500;
+  const MAX_NOTIFY_BEFORE = 180;
+
   const [alerts, setAlerts] = useState([
     {
       id: 1,
@@ -30,10 +33,122 @@ export default function AlertsPage() {
   const [showForm, setShowForm] = useState(false);
   const [formattedDates, setFormattedDates] = useState<string[]>([]);
 
+  const [validationErrors, setValidationErrors] = useState({
+    distance: "",
+    notifyBefore: "",
+    email: "",
+  });
+
   useEffect(() => {
     // Format expiration dates only on client
     setFormattedDates(alerts.map((a) => a.expiresAt.toLocaleDateString()));
   }, [alerts]);
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Ensures only numbers are entered and stay within 1-500 range
+  const validateAndSetDistance = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+  
+    // Check for non-digit characters or empty string
+    if (!/^\d*$/.test(rawValue) || rawValue === '') {
+      setValidationErrors(prev => ({
+        ...prev,
+        distance: 'Distance must be a positive number'
+      }));
+      setNewAlert(prev => ({ ...prev, distance: 0 }));
+      return;
+    }
+  
+    // Remove leading zeros 
+    const value = rawValue.replace(/^0+/, '');
+  
+    // If value is empty after removing leading zeros, it's zero or all zeros
+    if (value === '') {
+      setValidationErrors(prev => ({
+        ...prev,
+        distance: 'Distance must be a positive number'
+      }));
+      setNewAlert(prev => ({ ...prev, distance: 0 }));
+      return;
+    }
+  
+    const numValue = Number(value);
+
+  // Check for max value
+  if (numValue > MAX_DISTANCE) {
+    setValidationErrors(prev => ({
+      ...prev,
+      distance: `Distance cannot exceed ${MAX_DISTANCE} km`
+    }));
+    setNewAlert(prev => ({ ...prev, distance: numValue }));
+    return;
+  }
+
+  // Valid positive integer
+  setValidationErrors(prev => ({ ...prev, distance: '' }));
+  setNewAlert(prev => ({ ...prev, distance: numValue }));
+  };
+
+  // Ensures only numbers are entered and stay within 1-180 range
+  const validateAndSetNotifyBefore = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+  
+    // Check for non-digit characters or empty string
+    if (!/^\d*$/.test(rawValue) || rawValue === '') {
+      setValidationErrors(prev => ({
+        ...prev,
+        notifyBefore: 'Notify before time must be a positive number'
+      }));
+      setNewAlert(prev => ({ ...prev, notifyBefore: 0 }));
+      return;
+    }
+  
+    // Remove leading zeros
+    const value = rawValue.replace(/^0+/, '');
+  
+    // If value is empty after removing leading zeros, it's zero or all zeros
+    if (value === '') {
+      setValidationErrors(prev => ({
+        ...prev,
+        notifyBefore: 'Notify before time must be a positive number'
+      }));
+      setNewAlert(prev => ({ ...prev, notifyBefore: 0 }));
+      return;
+    }
+    const numValue = Number(value);
+
+  if (numValue > MAX_NOTIFY_BEFORE) {
+    setValidationErrors(prev => ({
+      ...prev,
+      notifyBefore: `Notify before time cannot exceed ${MAX_NOTIFY_BEFORE} minutes`
+    }));
+    setNewAlert(prev => ({ ...prev, notifyBefore: numValue }));
+    return;
+  }
+
+  setValidationErrors(prev => ({ ...prev, notifyBefore: '' }));
+  setNewAlert(prev => ({ ...prev, notifyBefore: numValue }));
+  };
+
+  // Ensures emails follow standard user@example.com pattern
+  const validateAndSetEmail = (value: string | number) => {
+    const emailValue = String(value);
+    if (emailValue && !emailRegex.test(emailValue)) {
+      setValidationErrors(prev => ({ 
+        ...prev, 
+        email: 'Please enter a valid email address' 
+      }));
+    } else {
+      setValidationErrors(prev => ({ 
+        ...prev, 
+        email: '' 
+      }));
+    }
+    setNewAlert({ ...newAlert, email: emailValue });
+  };
+
+  const hasValidationErrors = Object.values(validationErrors).some(error => error !== '');
 
   const inputFields: {
     label: string;
@@ -41,6 +156,7 @@ export default function AlertsPage() {
     onChange: (v: string | number) => void;
     type: string;
     placeholder: string;
+    error?: string;
   }[] = [
     {
       label: "Alert Name",
@@ -52,19 +168,19 @@ export default function AlertsPage() {
     },
     {
       label: "Distance (km)",
-      value: newAlert.distance,
-      onChange: (v: string | number) =>
-        setNewAlert({ ...newAlert, distance: Number(v) }),
-      type: "number",
+      value: newAlert.distance === 0 ? '' : newAlert.distance,
+      onChange: () => {},
+      type: "text",
       placeholder: "e.g., 5",
+      error: validationErrors.distance,
     },
     {
       label: "Notify Before (minutes)",
       value: newAlert.notifyBefore,
-      onChange: (v: string | number) =>
-        setNewAlert({ ...newAlert, notifyBefore: Number(v) }),
-      type: "number",
+      onChange: () => {},
+      type: "text",
       placeholder: "e.g., 15",
+      error: validationErrors.notifyBefore,
     },
     {
       label: "Expiration Date",
@@ -77,10 +193,10 @@ export default function AlertsPage() {
     {
       label: "Notification Email",
       value: newAlert.email,
-      onChange: (v: string | number) =>
-        setNewAlert({ ...newAlert, email: String(v) }),
+      onChange: validateAndSetEmail,
       type: "email",
       placeholder: "e.g., user@example.com",
+      error: validationErrors.email,
     },
   ];
 
@@ -113,15 +229,27 @@ export default function AlertsPage() {
                   </label>
                   <input
                     type={field.type}
-                    className="w-full p-3 rounded-md border border-gray-300 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full p-3 rounded-md border ${field.error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'} bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2`}
                     value={field.value}
-                    onChange={(e) =>
-                      field.type === "number"
-                        ? field.onChange(Number(e.target.value))
-                        : field.onChange(e.target.value)
+                    onChange={
+                      field.label === "Distance (km)"
+                        ? validateAndSetDistance
+                        : field.label === "Notify Before (minutes)"
+                          ? validateAndSetNotifyBefore
+                          : (e) =>
+                              field.type === "number"
+                                ? field.onChange(Number(e.target.value))
+                                : field.onChange(e.target.value)
                     }
                     placeholder={field.placeholder}
+                    inputMode={["Distance (km)", "Notify Before (minutes)"].includes(field.label) ? "numeric" : undefined}
+                    pattern={["Distance (km)", "Notify Before (minutes)"].includes(field.label) ? "[0-9]*" : undefined}
                   />
+                  {field.error && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {field.error}
+                    </p>
+                  )}
                 </div>
               ))}
 
@@ -149,12 +277,19 @@ export default function AlertsPage() {
             <div className="flex justify-end space-x-4">
               <button
                 className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setShowForm(false)}
+                onClick={() => {setShowForm(false);
+                  setValidationErrors({ distance: '', notifyBefore: '', email: '' });
+                }}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
+                disabled={!newAlert.email || hasValidationErrors}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  !newAlert.email || hasValidationErrors
+                    ? '!bg-gray-400 !text-gray-600 !cursor-not-allowed' // Used !important to ensure accurate styling
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
                 onClick={() => {
                   setAlerts([
                     ...alerts,
@@ -167,8 +302,8 @@ export default function AlertsPage() {
                     },
                   ]);
                   setShowForm(false);
+                  setValidationErrors({ distance: '', notifyBefore: '', email: '' });
                 }}
-                disabled={!newAlert.email}
               >
                 Save Alert
               </button>
@@ -187,7 +322,7 @@ export default function AlertsPage() {
                   <h3 className="font-semibold text-gray-900 dark:text-white">
                     {alert.name}
                   </h3>
-                  <div className="text-sm text-500 dark:text-gray-400 mt-2 space-y-1">
+                  <div className="text-sm text-gray-700 dark:text-gray-400 mt-2 space-y-1">
                     <p>
                       Type:{" "}
                       {alert.type.charAt(0).toUpperCase() + alert.type.slice(1)}
