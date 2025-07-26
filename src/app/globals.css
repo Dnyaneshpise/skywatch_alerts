@@ -1,17 +1,23 @@
 @import "tailwindcss";
 @import 'leaflet/dist/leaflet.css';
 
+
+/* --- 2. PRESERVED CSS VARIABLES (for compatibility) --- */
+/*
+  We are KEEPING your variable definitions in case any other part of your
+  application uses them. However, we have REMOVED the lines that apply them
+  directly to the `body`, as that was causing the conflict with Tailwind.
+*/
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --bg-color: #0d1117;
+  --text-color: #f0f6fc;
+  --secondary-text: #8b949e;
+  --accent-color: #58a6ff;
+  --font-inter: 'Inter', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
 }
-
-/* @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-} */
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -20,11 +26,6 @@
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -52,70 +53,19 @@ body {
   border-radius: 8px !important;
 }
 
-/* globals.css */
-:root {
-  --bg-color: #0d1117;
-  --text-color: #f0f6fc;
-  --secondary-text: #8b949e;
-  --accent-color: #58a6ff;
-  --font-inter: 'Inter', sans-serif;
-  --font-poppins: 'Poppins', sans-serif;
-}
 
-html, body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  font-family: var(--font-inter);
-  line-height: 1.6;
-  font-size: 16px;
-}
-
-h1, h2, h3, h4, h5 {
-  font-family: var(--font-poppins);
-  color: var(--accent-color);
-  margin: 0 0 0.5em 0;
-}
-
-p {
-  color: var(--text-color);
-  margin: 0 0 1em;
-}
-
-a {
-  color: var(--accent-color);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-a:hover {
-  color: #1f6feb;
-}
-
-button {
-  font-family: var(--font-poppins);
-  background-color: var(--accent-color);
-  color: var(--bg-color);
-  padding: 0.5em 1em;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #1f6feb;
-}
-
-
+/* --- 4. CLEANED UP BASE STYLES --- */
+/*
+  Generic styles for h1, button, a, etc., are removed because they
+  prevent Tailwind's utility classes (like `bg-red-500` or `text-lg`) from working.
+  You should now style these elements using Tailwind classes directly in your components.
+*/
 @layer base {
   html {
     scroll-behavior: smooth;
   }
   body {
     min-height: 100vh;
-    background-color: #f9fafb; /* Tailwind's bg-gray-50 */
-    color: #111827; /* Tailwind's text-gray-900 */
+    font-family: Arial, Helvetica, sans-serif;
   }
 }

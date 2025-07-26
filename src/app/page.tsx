@@ -1,6 +1,6 @@
 import LiveRadar from "@/components/map/LiveRadar";
 import Link from "next/link";
-import { Radar } from "lucide-react"; // Choose any icon you prefer
+import { Radar } from "lucide-react"; // Icon for logo
 
 export default function Home() {
   return (
