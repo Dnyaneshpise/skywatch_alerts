@@ -1,6 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 // 1. IMPORT THE NAVBAR COMPONENT
@@ -9,6 +9,14 @@ import Navbar from '@/components/layout/Navbar';
 const inter = Inter({ 
   subsets: ["latin"],
   variable: '--font-inter',
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: '--font-space-grotesk',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -34,7 +42,7 @@ export default function RootLayout({
         and the initial state of the mobile menu is consistent between server and client.
         Keeping it is fine, but this setup is robust.
       */}
-      <body className={`${inter.variable} font-sans bg-slate-900 text-slate-50 antialiased`}>
+      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans bg-slate-900 text-slate-50 antialiased`}>
         <Navbar />
         
         <main className="container mx-auto px-6 py-8">
