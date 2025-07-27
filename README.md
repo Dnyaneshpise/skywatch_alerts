@@ -2,7 +2,6 @@
 
 **SkyWatch Alerts** revolutionizes airspace awareness by offering real-time flight tracking and intelligent proximity alerts. Whether you're an aviation enthusiast, professional, or just curious about local air traffic, our platform keeps you informed with accurate and timely information.
 
----
 
 ## 🚀 Features
 
@@ -25,7 +24,7 @@ Analyze past flight patterns:
 - Understand aircraft behavior over time
 - Useful for research, safety checks, and enthusiasts
 
----
+
 
 ## 🛠️ How It Works
 
@@ -41,7 +40,7 @@ Analyze past flight patterns:
 3. **Receive Notifications**
    - When a matching flight enters your defined area, you'll receive an email alert in real-time
 
----
+
 
 ## 📦 Tech Stack
 
@@ -52,7 +51,12 @@ Analyze past flight patterns:
 - **Email Notifications**: NodeMailer / SendGrid
 - **Geolocation**: HTML5 Geolocation API / Manual entry
 
----
+
+
+## Installation
+Checkout [LEARN.md](LEARN.md)
+
+
 
 ## 🧪 Use Cases
 
@@ -61,7 +65,7 @@ Analyze past flight patterns:
 - **Aviation research or education**
 - **General curiosity about flights above you**
 
----
+
 
 ## 📸 Screenshots
 
@@ -81,25 +85,33 @@ Analyze past flight patterns:
 
 ![Alert Page](./public/screenshots/alert.png)
 
----
 
-## 📬 Contact
 
-For support or feature requests:
-- ✉️ Email: your-email@example.com
-- 🌐 Website: [skywatch-alerts.com](https://skywatch-alerts.com)
+## Upcoming Updates
+Looking to contribute? Here are a few beginner-friendly areas where you can help improve the project:
 
----
+- Integrating a persistent **database** (e.g. MongoDB for storing user preferences and alerts)
+- Adding **real-time alert systems** (email, WhatsApp, or push notifications)
+- Enhancing **map features** (e.g. better markers, aircraft paths, clustering)
+- Adding unit and integration **tests**
+- Improving the **UI/UX design** and responsiveness
+
+## Contributing
+
+Pull requests are welcome! If you’re unsure where to start, check out the **Upcoming Updates** section above or open an issue.
+
+If you find this project helpful, please consider giving it a ⭐ **star** to support its development and visibility!
+
 
 ## ⚠️ Disclaimer
 
 SkyWatch Alerts is for **informational purposes only**. It should not be relied upon for critical aviation decisions or safety-sensitive operations.
 
----
+
 
 ## 📄 License
 
-MIT License © [Your Name or Organization]
+The project is licensed under the [MIT License](LICENSE)
 
 ---
 
