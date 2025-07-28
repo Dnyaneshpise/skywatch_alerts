@@ -4,7 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard } from 'lucide-react';
+import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 const navLinks = [
   { href: '/', label: 'Live Radar', icon: Radar },
@@ -13,26 +14,48 @@ const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard  },
 ];
 
+function ThemeToggle() {
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  if (!mounted) return (
+    <button
+      aria-label="Toggle theme"
+      className="p-2 rounded-md bg-slate-800 text-yellow-400"
+      disabled
+    >
+      <Sun className="h-5 w-5" />
+    </button>
+  );
+
+  return (
+    <button
+      aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
+      className="p-2 rounded-md transition-colors bg-slate-800 hover:bg-slate-700 text-yellow-400 dark:text-blue-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+    >
+      {resolvedTheme === 'dark' ? (
+        <Sun className="h-5 w-5" />
+      ) : (
+        <Moon className="h-5 w-5" />
+      )}
+    </button>
+  );
+}
+
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      setIsOpen(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isOpen) setIsOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
+    document.body.style.overflow = isOpen ? 'hidden' : 'unset';
+    return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
   return (
@@ -70,10 +93,13 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+              {/* Theme Toggle Button */}
+              <ThemeToggle />
             </div>
 
             {/* Mobile Menu Hamburger Button */}
-            <div className="md:hidden">
+            <div className="md:hidden flex items-center space-x-2">
+              <ThemeToggle />
               <button
                 onClick={() => setIsOpen(true)}
                 className="p-2 text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 rounded-md"
@@ -94,13 +120,16 @@ export default function Navbar() {
               <Wind className="h-8 w-8 text-cyan-400" />
               <span className="text-2xl font-bold text-white">SkyWatch</span>
             </Link>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-2 rounded-md bg-blue-500/90 text-slate-900 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
-            >
-              <span className="sr-only">Close menu</span>
-              <X className="h-6 w-6" />
-            </button>
+            <div className="flex items-center space-x-2">
+              <ThemeToggle />
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 rounded-md bg-blue-500/90 text-slate-900 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <span className="sr-only">Close menu</span>
+                <X className="h-6 w-6" />
+              </button>
+            </div>
           </div>
 
           <div className="mt-6 px-6 space-y-4">
