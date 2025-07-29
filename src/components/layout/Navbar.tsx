@@ -4,18 +4,24 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard } from 'lucide-react';
+import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, LogIn, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/UseAuth';
+import { auth } from '@/lib/flights/firebase';
+import { signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
-const navLinks = [
-  { href: '/', label: 'Live Radar', icon: Radar },
-  { href: '/alerts', label: 'Alerts', icon: ShieldAlert },
-  { href: '/about', label: 'About', icon: Info },
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard  },
+const allNavLinks = [
+  { href: '/', label: 'Live Radar', icon: Radar, protected: false },
+  { href: '/alerts', label: 'Alerts', icon: ShieldAlert, protected: true },
+  { href: '/about', label: 'About', icon: Info, protected: false },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, protected: true },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth(); // DEBUG: Removed 'loading' for now to force render
+
+  const navLinks = allNavLinks.filter(link => !link.protected || !!user);
 
   useEffect(() => {
     if (isOpen) {
@@ -35,10 +41,69 @@ export default function Navbar() {
     };
   }, [isOpen]);
 
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+    }
+  };
+
+  // DEBUG: This component will now render immediately without the loading check
+  const AuthButtons = () => {
+    return user ? (
+      <button
+        onClick={handleSignOut}
+        className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-red-600 hover:bg-red-700 text-white"
+      >
+        <LogOut className="h-4 w-4" />
+        <span>Sign Out</span>
+      </button>
+    ) : (
+      <button
+        onClick={handleGoogleSignIn}
+        className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-cyan-500 hover:bg-cyan-600 text-white"
+      >
+        <LogIn className="h-4 w-4" />
+        <span>Sign In with Google</span>
+      </button>
+    );
+  };
+  
+  // DEBUG: This component will also render immediately
+  const MobileAuthButtons = () => {
+    return user ? (
+       <button
+        onClick={handleSignOut}
+        className="flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 bg-red-600/90 text-white hover:bg-red-700"
+      >
+        <LogOut className="h-6 w-6" />
+        <span>Sign Out ({user.email})</span>
+      </button>
+    ) : (
+      <button
+        onClick={handleGoogleSignIn}
+        className="flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 bg-cyan-500/90 text-white hover:bg-cyan-600"
+      >
+        <LogIn className="h-6 w-6" />
+        <span>Sign In with Google</span>
+      </button>
+    );
+  };
+
+
   return (
     <>
       {/* --- DESKTOP NAVBAR --- */}
-      {/* ✅ FIX 1: Changed z-100 to z-40, a standard and sufficient Tailwind z-index value */}
       <nav className="bg-slate-900/80 text-white backdrop-blur-lg sticky top-0 z-40 border-b border-slate-700/60 shadow-lg">
         <div className="container mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
@@ -70,6 +135,9 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+               <div className="pl-4">
+                 <AuthButtons />
+               </div>
             </div>
 
             {/* Mobile Menu Hamburger Button */}
@@ -88,7 +156,7 @@ export default function Navbar() {
 
       {/* --- MOBILE MENU OVERLAY --- */}
       {isOpen && (
-        <div className="fixed inset-0 z-[10000] bg-slate-900 md:hidden" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 bg-slate-900 md:hidden" role="dialog" aria-modal="true">
           <div className="flex items-center justify-between px-6 py-3 border-b border-slate-700/60">
             <Link href="/" className="flex items-center space-x-2">
               <Wind className="h-8 w-8 text-cyan-400" />
@@ -96,7 +164,7 @@ export default function Navbar() {
             </Link>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2 rounded-md bg-blue-500/90 text-slate-900 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="p-2 rounded-md text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
             >
               <span className="sr-only">Close menu</span>
               <X className="h-6 w-6" />
@@ -113,8 +181,8 @@ export default function Navbar() {
                   href={link.href}
                   className={`flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 ${
                     isActive
-                      ? 'bg-cyan-400 text-white'
-                      : 'text-sky-300 hover:bg-slate-800'
+                      ? 'bg-cyan-400/90 text-slate-900'
+                      : 'text-slate-300 hover:bg-slate-800'
                   }`}
                 >
                   <Icon className="h-6 w-6" />
@@ -122,13 +190,11 @@ export default function Navbar() {
                 </Link>
               );
             })}
+            <hr className="border-slate-700/60" />
+            <MobileAuthButtons />
           </div>
         </div>
       )}
     </>
   );
 }
-
-
-
-

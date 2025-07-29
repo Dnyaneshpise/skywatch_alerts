@@ -3,8 +3,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-// 1. IMPORT THE NAVBAR COMPONENT
+// Import the necessary components and providers
 import Navbar from '@/components/layout/Navbar';
+import { AuthProvider } from '@/hooks/UseAuth'; // Corrected the casing for convention
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -26,20 +27,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
-      {/* 
-        You had `suppressHydrationWarning` which is a good safeguard.
-        However, the structure we are using is the standard Next.js pattern and 
-        is designed to prevent these warnings from occurring in the first place.
-        The `usePathname` hook in your Navbar is supported during server rendering,
-        and the initial state of the mobile menu is consistent between server and client.
-        Keeping it is fine, but this setup is robust.
-      */}
       <body className={`${inter.variable} font-sans bg-slate-900 text-slate-50 antialiased`}>
-        <Navbar />
-        
-        <main className="container mx-auto px-6 py-8">
-          {children}
-        </main>
+        {/* Wrap the entire application with AuthProvider.
+          This makes the authentication context available to all child components,
+          including the Navbar and any page content.
+        */}
+        <AuthProvider>
+          <Navbar />
+          
+          <main className="container mx-auto px-6 py-8">
+            {children}
+          </main>
+        </AuthProvider>
       </body>
     </html>
   );
