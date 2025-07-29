@@ -68,4 +68,7 @@
     min-height: 100vh;
     font-family: Arial, Helvetica, sans-serif;
   }
+  .font-space-grotesk {
+    font-family: 'Space Grotesk', sans-serif;
+  }
 }
