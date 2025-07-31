@@ -8,23 +8,34 @@
   application uses them. However, we have REMOVED the lines that apply them
   directly to the `body`, as that was causing the conflict with Tailwind.
 */
+
+/* --- Theme Variables --- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --bg-color: #0d1117;
-  --text-color: #f0f6fc;
-  --secondary-text: #8b949e;
-  --accent-color: #58a6ff;
-  --font-inter: 'Inter', sans-serif;
-  --font-poppins: 'Poppins', sans-serif;
+  --background: #e2eaf7;
+  --foreground: #1e293b;
+  --card: #2c3e57;
+  --card-secondary: #435773;
+  --accent: #4dbff4;
+  --muted: #64748b;
+  --border-color: #4dbff4;
+  --text-primary: #2f316f;
+  --text-secondary: #ffffff;
+  --text-tertiary: #d0cdcd;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: rgb(17 24 39);
+  --card-secondary: rgb(31 41 55);;
+  --accent: #06d5f5;
+  --muted: #94a3b8;
+  --border: rgb(229 231 235);
+  --text-primary: #fefbfb;
+  --text-secondary: #ffffff;
+  --text-tertiary:  rgb(156 163 175);;
 }
+
 
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -64,8 +75,11 @@
   html {
     scroll-behavior: smooth;
   }
-  body {
+   body {
     min-height: 100vh;
     font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }

@@ -7,24 +7,21 @@ export default function AboutPage() {
     textSecondary: '#4a4a4a',
     background: '#ffffff',
     cardBackground: '#f8f9fa',
-    primary: '#0056b3',
+    primary: '#036ddf',
     primaryHover: '#003d7a',
     border: '#dee2e6'
   };
 
   return (
     <main 
-      className="container mx-auto py-8 px-4"
-      style={{ color: colors.textPrimary }}
-    >
+      className="container mx-auto py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">About SkyWatch Alerts</h1>
-        
-        <div 
-          className="rounded-lg p-8 mb-8 shadow-sm"
+        <h1 className="text-3xl font-bold mb-8 text-center text-[var(--text-primary)]">About SkyWatch Alerts</h1>
+
+        <div
+          className="rounded-lg p-8 mb-8 shadow-sm border border-[var(--border-color)]"
           style={{
-            backgroundColor: colors.cardBackground,
-            border: `1px solid ${colors.border}`
+            backgroundColor: colors.cardBackground
           }}
         >
           <section className="mb-8">
@@ -36,8 +33,8 @@ export default function AboutPage() {
               and intelligent proximity alerts, keeping you informed about aircraft movements in your vicinity.
             </p>
             <p style={{ color: colors.textSecondary }}>
-              Whether you're an aviation enthusiast, professional, or simply curious about air traffic, 
-              our platform delivers accurate, timely information right to your fingertips.
+              {`Whether you're an aviation enthusiast, professional, or simply curious about air traffic, 
+              our platform delivers accurate, timely information right to your fingertips.`}
             </p>
           </section>
 
@@ -77,7 +74,7 @@ export default function AboutPage() {
                 <div className="ml-4">
                   <h3 className="font-medium" style={{ color: colors.textPrimary }}>Flight History</h3>
                   <p style={{ color: colors.textSecondary }}>
-                    Explore historical flight paths and analyze patterns with our "Flight Archaeology" feature.
+                    {`Explore historical flight paths and analyze patterns with our "Flight Archaeology" feature.`}
                   </p>
                 </div>
               </li>

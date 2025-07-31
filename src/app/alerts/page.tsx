@@ -201,12 +201,12 @@ export default function AlertsPage() {
   ];
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-10 text-gray-900 dark:text-white">
-      <h1 className="text-3xl font-bold mb-8">Flight Alerts</h1>
+    <main className="max-w-4xl mx-auto px-4 py-10 ">
+      <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-8">Flight Alerts</h1>
 
-      <div className="rounded-lg p-6 mb-8 border border-gray-200 bg-white dark:bg-gray-900 shadow-sm">
+      <div className="rounded-lg bg-[var(--card)] p-6 mb-8 border border-[var(--border)] shadow-sm">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">My Alerts</h2>
+          <h2 className="text-xl font-semibold text-[var(--text-secondary)]">My Alerts</h2>
           <button
             className="px-4 py-2 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
             onClick={() => setShowForm(true)}
@@ -216,7 +216,7 @@ export default function AlertsPage() {
         </div>
 
         {showForm && (
-          <div className="mb-8 p-6 rounded-lg border border-gray-200 bg-white dark:bg-gray-800">
+          <div className="mb-8 p-6 rounded-lg shadow-sm">
             <h3 className="text-lg font-medium mb-4">
               New Alert Configuration
             </h3>
@@ -258,8 +258,8 @@ export default function AlertsPage() {
                   Aircraft Type
                 </label>
                 <select
-                  className="w-full p-3 rounded-md border border-gray-300 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                  style={{ 
+                  className="w-full p-3 rounded-md border border-gray-300 bg-white dark:bg-gray-900 text-[var(--text-secondary)] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                  style={{
                     boxShadow: '0 1px 2px 1px rgb(0 0 0 / 0.06)'
                   }}
                   value={newAlert.type}
@@ -315,14 +315,14 @@ export default function AlertsPage() {
           {alerts.map((alert, index) => (
             <div
               key={alert.id}
-              className="p-4 rounded-lg border border-gray-200 bg-white dark:bg-gray-800 shadow-sm"
+              className="p-4 rounded-lg border border-[var(--border)] bg-[var(--card-secondary)]  shadow-sm"
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                  <h3 className="font-semibold text-[var(--text-secondary)]">
                     {alert.name}
                   </h3>
-                  <div className="text-sm text-gray-700 dark:text-gray-400 mt-2 space-y-1">
+                  <div className="text-sm text-[var(--text-tertiary)] mt-2 space-y-1">
                     <p>
                       Type:{" "}
                       {alert.type.charAt(0).toUpperCase() + alert.type.slice(1)}
@@ -355,7 +355,7 @@ export default function AlertsPage() {
                     <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-full"></div>
                   </label>
                   <button
-                    className="font-medium text-red-600 hover:underline"
+                    className="font-medium text-red-500 hover:underline"
                     onClick={() =>
                       setAlerts(alerts.filter((a) => a.id !== alert.id))
                     }
@@ -371,7 +371,7 @@ export default function AlertsPage() {
         <div className="mt-8">
           <Link
             href="/"
-            className="inline-flex items-center font-medium text-blue-600 hover:underline"
+            className="inline-flex items-center font-medium text-blue-500 hover:underline"
           >
             ← Back to Live Radar
           </Link>

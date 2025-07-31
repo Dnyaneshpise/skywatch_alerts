@@ -57,79 +57,79 @@ export default function Dashboard() {
       fontFamily: 'Inter, Arial, sans-serif',
       padding: '1rem'
     }}>
-      <h1 style={{textAlign:'center',marginBottom:'2rem',fontWeight:700,fontSize:'2rem'}}>🛩️ Daily Flight Summary & Insights</h1>
+      <h1 className="text-[var(--color-secondary)]" style={{textAlign:'center',marginBottom:'2rem',fontWeight:700,fontSize:'2rem'}}> Daily Flight Summary & Insights</h1>
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         gap: '1.5rem'
       }}>
-        <div style={{
+        <div className= "border border-slate-600 hover:text-cyan-300" style={{
           background: '#e3f2fd',
           borderRadius: 12,
           padding: '1.2rem',
           boxShadow: '0 2px 8px #0001'
         }}>
-          <h2 style={{marginBottom:8}}>🛫 Total Flights Detected</h2>
+          <h2 className='text-gray-700' style={{marginBottom:8}}>🛫 Total Flights Detected</h2>
           <p style={{fontSize:'2rem',fontWeight:600,color:'#1976d2'}}>{summary.totalFlights ?? 0}</p>
         </div>
-        <div style={{
+        <div className= " border border-slate-600 " style={{
           background: '#fff3e0',
           borderRadius: 12,
           padding: '1.2rem',
           boxShadow: '0 2px 8px #0001'
         }}>
-          <h2 style={{marginBottom:8}}>📈 Peak Flight Hour</h2>
+          <h2 className='text-gray-700' style={{marginBottom:8}}>📈 Peak Flight Hour</h2>
           <p style={{fontSize:'1.2rem',fontWeight:500,color:'#f57c00'}}>
             {summary.peakHour
               ? `${summary.peakHour[0]}:00 — ${summary.peakHour[0]}:59 (${summary.peakHour[1]} flights)`
               : 'No data'}
           </p>
         </div>
-        <div style={{
+        <div className= " border border-slate-600" style={{
           background: '#e8f5e9',
           borderRadius: 12,
           padding: '1.2rem',
           boxShadow: '0 2px 8px #0001'
         }}>
-          <h2 style={{marginBottom:8}}>✈️ Most Frequent Airline</h2>
+          <h2 className='text-gray-700' style={{marginBottom:8}}>✈️ Most Frequent Airline</h2>
           <p style={{fontSize:'1.2rem',fontWeight:500,color:'#388e3c'}}>
             {summary.frequentAirline
               ? `${summary.frequentAirline[0]} (${summary.frequentAirline[1]} times)`
               : 'No data'}
           </p>
         </div>
-        <div style={{
+        <div className= " border border-slate-600" style={{
           background: '#fce4ec',
           borderRadius: 12,
           padding: '1.2rem',
           boxShadow: '0 2px 8px #0001'
         }}>
-          <h2 style={{marginBottom:8}}>✈️ Most Frequent Aircraft Type</h2>
+          <h2 className='text-gray-700' style={{marginBottom:8}}>✈️ Most Frequent Aircraft Type</h2>
           <p style={{fontSize:'1.2rem',fontWeight:500,color:'#d81b60'}}>
             {summary.frequentAircraft
               ? `${summary.frequentAircraft[0]} (${summary.frequentAircraft[1]} times)`
               : 'No data'}
           </p>
         </div>
-        <div style={{
+        <div className= " border border-slate-600" style={{
           background: '#ede7f6',
           borderRadius: 12,
           padding: '1.2rem',
           boxShadow: '0 2px 8px #0001'
         }}>
-          <h2 style={{marginBottom:8}}>🌤 Average Altitude & Speed</h2>
+          <h2 className='text-gray-700' style={{marginBottom:8}}>🌤 Average Altitude & Speed</h2>
           <p style={{fontSize:'1.2rem',fontWeight:500,color:'#512da8'}}>
             Altitude: {isNaN(summary.avgAltitude) ? '-' : `${summary.avgAltitude.toFixed(0)} ft`}<br />
             Speed: {isNaN(summary.avgSpeed) ? '-' : `${summary.avgSpeed.toFixed(0)} knots`}
           </p>
         </div>
-        <div style={{
+        <div className= " border border-slate-600" style={{
           background: '#fffde7',
           borderRadius: 12,
           padding: '1.2rem',
           boxShadow: '0 2px 8px #0001'
         }}>
-          <h2 style={{marginBottom:8}}>🔔 Flagged Events</h2>
+          <h2 className='text-gray-700' style={{marginBottom:8}}>🔔 Flagged Events</h2>
           <ul style={{fontSize:'1.1rem',fontWeight:500,color:'#fbc02d',marginLeft:0,paddingLeft:'1rem'}}>
             <li>Flights below 10,000 ft: <b>{summary.flagged.lowAltitude ?? 0}</b></li>
             <li>Stationary/Hovering flights: <b>{summary.flagged.stationary ?? 0}</b></li>

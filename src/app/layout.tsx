@@ -7,6 +7,9 @@ import "./globals.css";
 import Navbar from '@/components/layout/Navbar';
 import { AuthProvider } from '@/hooks/UseAuth'; // Corrected the casing for convention
 
+// 2. IMPORT THE THEME PROVIDER
+import { ThemeProvider } from '@/components/Providers/ThemeProvider';
+
 const inter = Inter({ 
   subsets: ["latin"],
   variable: '--font-inter',
@@ -26,18 +29,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
-      <body className={`${inter.variable} font-sans bg-slate-900 text-slate-50 antialiased`}>
+    
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased`}>
         {/* Wrap the entire application with AuthProvider.
           This makes the authentication context available to all child components,
           including the Navbar and any page content.
         */}
         <AuthProvider>
-          <Navbar />
-          
-          <main className="container mx-auto px-6 py-8">
+          <ThemeProvider>
+            <Navbar />
+            <main className="container mx-auto px-6 py-8">
             {children}
-          </main>
+           </main>
+         </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
