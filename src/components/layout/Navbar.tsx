@@ -5,12 +5,13 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, Mail} from 'lucide-react';
+import ThemeToggle from '../ui/ThemeToggle';
 
 const navLinks = [
   { href: '/', label: 'Live Radar', icon: Radar },
   { href: '/alerts', label: 'Alerts', icon: ShieldAlert },
   { href: '/about', label: 'About', icon: Info },
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard  },
+  { href: '/Dashboard', label: 'Dashboard', icon: LayoutDashboard  },
   { href: '/contact', label: 'Contact us', icon: Mail },
 ];
 
@@ -71,6 +72,8 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+
+              <ThemeToggle/>
             </div>
 
             {/* Mobile Menu Hamburger Button */}
