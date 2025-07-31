@@ -142,7 +142,7 @@ export default function LiveRadar() {
   return (
     // ✅ FIX 2: Added z-0 to create a new stacking context for the map.
     // This "traps" Leaflet's high internal z-indexes below the navbar.
-    <div className="h-[600px] w-full relative rounded-lg overflow-hidden border z-0">
+    <div className="w-full min-h-[300px] h-[60vh] sm:h-[70vh] md:h-[600px] relative rounded-lg overflow-hidden border z-0">
       {loading && (
         // The loading overlay's z-10 is now relative to this container's z-0 context.
         <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
