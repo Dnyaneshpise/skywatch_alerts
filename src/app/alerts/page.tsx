@@ -3,22 +3,50 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+interface AlertItem{
+  id:number,
+  name:string,
+  type:string,
+  distance:number,
+  notifyBefore:number,
+  email:string,
+  expiresAt:Date,
+  active:boolean
+}
+
 export default function AlertsPage() {
   const MAX_DISTANCE = 500;
   const MAX_NOTIFY_BEFORE = 180;
 
-  const [alerts, setAlerts] = useState([
-    {
-      id: 1,
-      name: "Commercial Flights",
-      type: "commercial",
-      distance: 5,
-      notifyBefore: 15,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      email: "user@example.com",
-      active: true,
-    },
-  ]);
+  const defaultAlert = [
+  {
+    id: 1,
+    name: "Commercial Flights",
+    type: "commercial",
+    distance: 5,
+    notifyBefore: 15,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    email: "user@example.com",
+    active: true,
+  },
+];
+  const [alerts, setAlerts] = useState(() => {
+  // Initialize from localStorage if exists, otherwise fallback to default
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("flightAlerts");
+    if (saved) {
+      try {
+        return JSON.parse(saved).map((a: any) => ({
+          ...a,
+          expiresAt: new Date(a.expiresAt),
+        }));
+      } catch (err) {
+        console.error("Failed to parse localStorage data", err);
+      }
+    }
+  }
+  return defaultAlert;
+});
 
   const [newAlert, setNewAlert] = useState({
     name: "",
@@ -29,7 +57,7 @@ export default function AlertsPage() {
     email: "",
     active: true,
   });
-
+  const [stored,setStored]=useState<AlertItem[]>([])
   const [showForm, setShowForm] = useState(false);
   const [formattedDates, setFormattedDates] = useState<string[]>([]);
 
@@ -41,7 +69,7 @@ export default function AlertsPage() {
 
   useEffect(() => {
     // Format expiration dates only on client
-    setFormattedDates(alerts.map((a) => a.expiresAt.toLocaleDateString()));
+    setFormattedDates(alerts.map((a:AlertItem) => a.expiresAt.toLocaleDateString()));
   }, [alerts]);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -199,6 +227,15 @@ export default function AlertsPage() {
       error: validationErrors.email,
     },
   ];
+  useEffect(() => {
+  if (alerts.length > 0) {
+    const serialized = alerts.map((a:AlertItem) => ({
+      ...a,
+      expiresAt: a.expiresAt instanceof Date ? a.expiresAt.toISOString() : a.expiresAt,
+    }));
+    localStorage.setItem("flightAlerts", JSON.stringify(serialized));
+  }
+}, [alerts]);
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10 text-gray-900 dark:text-white">
@@ -291,19 +328,25 @@ export default function AlertsPage() {
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
                 onClick={() => {
-                  setAlerts([
-                    ...alerts,
-                    {
-                      ...newAlert,
-                      id: alerts.length + 1,
-                      name:
-                        newAlert.name ||
-                        `${newAlert.type} within ${newAlert.distance}km`,
-                    },
-                  ]);
-                  setShowForm(false);
-                  setValidationErrors({ distance: '', notifyBefore: '', email: '' });
-                }}
+  const newId = Date.now(); // safer unique ID than alerts.length + 1
+  const alertToSave = {
+    ...newAlert,
+    id: newId,
+    name: newAlert.name || `${newAlert.type} within ${newAlert.distance}km`,
+  };
+
+  // Save to alerts (visible list)
+  setAlerts([...alerts, alertToSave]);
+
+  // Save to full history in localStorage
+  const history = JSON.parse(localStorage.getItem("flightAlertHistory") || "[]");
+  localStorage.setItem("flightAlertHistory", JSON.stringify([...history, alertToSave]));
+
+  // Cleanup
+  setShowForm(false);
+  setValidationErrors({ distance: '', notifyBefore: '', email: '' });
+}}
+
               >
                 Save Alert
               </button>
@@ -312,7 +355,7 @@ export default function AlertsPage() {
         )}
 
         <div className="space-y-4">
-          {alerts.map((alert, index) => (
+          {alerts.map((alert:AlertItem, index:number) => (
             <div
               key={alert.id}
               className="p-4 rounded-lg border border-gray-200 bg-white dark:bg-gray-800 shadow-sm"
@@ -345,7 +388,7 @@ export default function AlertsPage() {
                       checked={alert.active}
                       onChange={() =>
                         setAlerts(
-                          alerts.map((a) =>
+                          alerts.map((a:AlertItem) =>
                             a.id === alert.id ? { ...a, active: !a.active } : a
                           )
                         )
@@ -357,7 +400,7 @@ export default function AlertsPage() {
                   <button
                     className="font-medium text-red-600 hover:underline"
                     onClick={() =>
-                      setAlerts(alerts.filter((a) => a.id !== alert.id))
+                      setAlerts(alerts.filter((a:AlertItem) => a.id !== alert.id))
                     }
                   >
                     Delete
