@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, Mail, LogIn, LogOut } from 'lucide-react';
+import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, Mail, LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/UseAuth';
 import { auth } from '@/lib/flights/firebase';
 import { signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
@@ -16,6 +16,7 @@ const allNavLinks = [
   { href: '/about', label: 'About', icon: Info, protected: false },
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, protected: true },
   { href: '/contact', label: 'Contact us', icon: Mail, protected: false },
+  { href: '/profile', label: 'Profile', icon: UserIcon, protected: true }, // Added Profile link
 ];
 
 
@@ -75,13 +76,19 @@ export default function Navbar() {
   // DEBUG: This component will now render immediately without the loading check
   const AuthButtons = () => {
     return user ? (
-      <button
-        onClick={handleSignOut}
-        className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-red-600 hover:bg-red-700 text-white"
-      >
-        <LogOut className="h-4 w-4" />
-        <span>Sign Out</span>
-      </button>
+      <div className="flex items-center space-x-2">
+        <Link href="/profile" className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-gray-700 hover:bg-gray-600 text-white">
+            <UserIcon className="h-4 w-4" />
+            <span>Profile</span>
+        </Link>
+        <button
+            onClick={handleSignOut}
+            className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-red-600 hover:bg-red-700 text-white"
+        >
+            <LogOut className="h-4 w-4" />
+            <span>Sign Out</span>
+        </button>
+      </div>
     ) : (
       <button
         onClick={handleGoogleSignIn}
@@ -92,7 +99,7 @@ export default function Navbar() {
       </button>
     );
   };
-  
+
   // DEBUG: This component will also render immediately
   const MobileAuthButtons = () => {
     return user ? (
