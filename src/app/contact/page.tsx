@@ -48,7 +48,7 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-900 py-16 px-4 md:px-8 lg:px-16">
+    <main className="min-h-screen py-16 px-4 md:px-8 lg:px-16">
       <div className="max-w-3xl mx-auto bg-slate-800 border border-cyan-400 shadow-lg rounded-2xl p-8 text-white">
         <h1 className="text-3xl font-bold mb-8 text-center text-[#22d3ee]">
           Get in Touch

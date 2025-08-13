@@ -4,32 +4,25 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
 import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, Mail, LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/UseAuth';
 import { auth } from '@/lib/flights/firebase';
 import { signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import ThemeToggle from '../ui/ThemeToggle';
+
 
 const allNavLinks = [
   { href: '/', label: 'Live Radar', icon: Radar, protected: false },
   { href: '/alerts', label: 'Alerts', icon: ShieldAlert, protected: true },
   { href: '/about', label: 'About', icon: Info, protected: false },
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, protected: true },
+  { href: '/Dashboard', label: 'Dashboard', icon: LayoutDashboard, protected: true },
   { href: '/contact', label: 'Contact us', icon: Mail, protected: false },
   { href: '/profile', label: 'Profile', icon: UserIcon, protected: true }, // Added Profile link
 ];
 
 
-// import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, Mail} from 'lucide-react';
 
-const navLinks = [
-  { href: '/', label: 'Live Radar', icon: Radar },
-  { href: '/alerts', label: 'Alerts', icon: ShieldAlert },
-  { href: '/about', label: 'About', icon: Info },
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard  },
-  { href: '/contact', label: 'Contact us', icon: Mail },
 
-];
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -125,8 +118,7 @@ export default function Navbar() {
   return (
     <>
       {/* --- DESKTOP NAVBAR --- */}
-      <nav className="bg-slate-900/80 text-white backdrop-blur-lg sticky top-0 z-40 border-b border-slate-700/60 shadow-lg">
-        <div className="container mx-auto px-6 py-3">
+      <nav className="bg-slate-900/80 text-white backdrop-blur-lg sticky top-0 z-40 border-b border-slate-700/60 shadow-lg">        <div className="container mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-2">
               <Wind className="h-8 w-8 text-cyan-400" />
@@ -156,13 +148,14 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+              <ThemeToggle/>
                <div className="pl-4">
                  <AuthButtons />
                </div>
             </div>
 
             {/* Mobile Menu Hamburger Button */}
-            <div className="md:hidden">
+            <div className="md:hidden space-x-2">
               <button
                 onClick={() => setIsOpen(true)}
                 className="p-2 text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 rounded-md"
@@ -170,6 +163,7 @@ export default function Navbar() {
                 <span className="sr-only">Open main menu</span>
                 <Menu className="h-6 w-6" />
               </button>
+              <ThemeToggle />
             </div>
           </div>
         </div>
