@@ -6,6 +6,7 @@ import "./globals.css";
 // Import the necessary components and providers
 import Navbar from '@/components/layout/Navbar';
 import { AuthProvider } from '@/hooks/UseAuth'; // Corrected the casing for convention
+import Footer from "@/components/layout/Footer";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -38,6 +39,8 @@ export default function RootLayout({
           <main className="container mx-auto px-6 py-8">
             {children}
           </main>
+
+          <Footer />
         </AuthProvider>
       </body>
     </html>
