@@ -33,7 +33,7 @@ export default function RootLayout({
           This makes the authentication context available to all child components,
           including the Navbar and any page content.
         */}
-         <AuthProvider> *
+         <AuthProvider>
           <Navbar />
           
           <main className="container mx-auto px-6 py-8">

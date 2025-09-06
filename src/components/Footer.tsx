@@ -34,13 +34,13 @@ export default function Footer() {
           {/* Social Icons */}
           <div className="flex md:justify-end justify-center space-x-5">
             <a href="#" className="hover:text-white transition" aria-label="Twitter">
-              🐦
+              
             </a>
             <a href="#" className="hover:text-white transition" aria-label="LinkedIn">
-              💼
+              
             </a>
             <a href="#" className="hover:text-white transition" aria-label="GitHub">
-              💻
+              
             </a>
           </div>
         </div>
