@@ -26,7 +26,7 @@ Analyze past flight patterns:
 
 
 
-## 🛠️ How It Works
+### 🛠️ How It Works
 
 1. **Set Your Location**
    - Allow browser geolocation access **OR**
@@ -142,7 +142,7 @@ Common issues and solutions:
    Check your email service credentials in the backend .env file
    For Gmail, ensure you're using an App Password, not your regular password
 
--Flight data not loading
+- Flight data not loading
    Verify your OpenSky API credentials are correct
 
 ## ⭐ Support the Project
