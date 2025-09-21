@@ -1,6 +1,6 @@
 # ✈️ SkyWatch Alerts
 
-**SkyWatch Alerts** revolutionizes airspace awareness by offering real-time flight tracking and intelligent proximity alerts. Whether you're an aviation enthusiast, professional, or just curious about local air traffic, our platform keeps you informed with accurate and timely information.
+**SkyWatch Alerts** is a real-time flight tracking and proximity alert system that keeps you informed about aircraft activity in your area. Perfect for aviation enthusiasts, drone pilots, researchers, or anyone curious about local air traffic.
 
 
 ## 🚀 Features
@@ -30,7 +30,7 @@ Analyze past flight patterns:
 
 1. **Set Your Location**
    - Allow browser geolocation access **OR**
-   - Enter custom coordinates (latitude & longitude)
+   - Manually enter coordinates (latitude & longitude)
 
 2. **Configure Alerts**
    - Choose your alert radius (e.g. 10 km around your location)
@@ -51,11 +51,15 @@ Analyze past flight patterns:
 - **Email Notifications**: NodeMailer / SendGrid
 - **Geolocation**: HTML5 Geolocation API / Manual entry
 
+## 🚀 Quick Start
+** Prerequisites
 
+- Node.js (v14 or higher)
+- MongoDB (local installation or MongoDB Atlas account)
+- npm or yarn
 
 ## Installation
 Checkout [LEARN.md](LEARN.md)
-
 
 
 ## 🧪 Use Cases
@@ -65,7 +69,21 @@ Checkout [LEARN.md](LEARN.md)
 - **Aviation research or education**
 - **General curiosity about flights above you**
 
+## 🔧 Additional Setup Details
+** Getting API Credentials
+- OpenSky Network API
+   1.Register at https://opensky-network.org/
+   2.Free accounts have limited requests per day
 
+- Mapbox Access Token
+   1.Create a free account at https://www.mapbox.com/
+   2.Generate an access token from your account dashboard
+
+- Email Service Setup
+   For Gmail, you'll need to generate an App Password:
+      1.Enable 2-factor authentication on your Google account
+      2.Go to Google Account Settings > Security > App passwords
+      3.Generate a password for SkyWatch Alerts
 
 ## 📸 Screenshots
 
@@ -105,13 +123,31 @@ If you find this project helpful, please consider giving it a ⭐ **star** to su
 
 ## ⚠️ Disclaimer
 
-SkyWatch Alerts is for **informational purposes only**. It should not be relied upon for critical aviation decisions or safety-sensitive operations.
-
-
+SkyWatch Alerts is for **informational purposes only**. It should not be used for critical aviation decisions or safety-sensitive operations. Always rely on official aviation authorities for flight safety information.
 
 ## 📄 License
 
-The project is licensed under the [MIT License](LICENSE)
+This project is licensed under the MIT License - see the [MIT License](LICENSE) file for details.
+
+## ❓ Troubleshooting
+Common issues and solutions:
+
+- Connection to MongoDB fails
+   Ensure MongoDB is running locally or your MongoDB Atlas connection string is correct
+
+- Map doesn't display
+   Verify your Mapbox access token is correctly set in the frontend .env file
+
+- Email notifications not working
+   Check your email service credentials in the backend .env file
+   For Gmail, ensure you're using an App Password, not your regular password
+
+-Flight data not loading
+   Verify your OpenSky API credentials are correct
+
+## ⭐ Support the Project
+If you find this project useful, please give it a star on GitHub!
 
 ---
+
 
