@@ -52,13 +52,13 @@ Analyze past flight patterns:
 - **Geolocation**: HTML5 Geolocation API / Manual entry
 
 ## 🚀 Quick Start
-** Prerequisites
+# Prerequisites
 
 - Node.js (v14 or higher)
 - MongoDB (local installation or MongoDB Atlas account)
 - npm or yarn
 
-## Installation
+# Installation
 Checkout [LEARN.md](LEARN.md)
 
 
