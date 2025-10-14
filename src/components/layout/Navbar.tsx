@@ -125,7 +125,7 @@ export default function Navbar() {
   return (
     <>
       {/* --- DESKTOP NAVBAR --- */}
-      <nav className="bg-slate-900/80 text-white backdrop-blur-lg sticky top-0 z-40 border-b border-slate-700/60 shadow-lg">
+      <nav className="bg-slate-900/80 text-white backdrop-blur-lg sticky top-0 z-[999] border-b border-slate-700/60 shadow-lg ">
         <div className="container mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-2">
