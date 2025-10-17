@@ -69,3 +69,33 @@
     font-family: Arial, Helvetica, sans-serif;
   }
 }
+/* This is the div we created in the component */
+.starfield-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Puts it behind everything */
+}
+
+/* This is the canvas Three.js creates inside that div */
+.starfield-background canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Make sure your main app container (e.g., #root or .App)
+  has a position and z-index so it stays on top.
+*/
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* If your main container is <div class="App"> */
+.App {
+  position: relative;
+  z-index: 1;
+}

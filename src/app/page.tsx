@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/UseAuth";
 import { auth } from "@/lib/flights/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { LogIn } from "lucide-react";
-
+import StarfieldBackground from '@/components/StarfieldBackground';
 export default function Home() {
   const { user, loading } = useAuth();
 
@@ -21,7 +21,7 @@ export default function Home() {
 
   return (
     <main className="container mx-auto py-8 px-4">
-
+      <StarfieldBackground />
       {/* Sign-In Prompt for Logged-Out Users */}
       {!loading && !user && (
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl shadow-lg text-center p-8 mb-8">
