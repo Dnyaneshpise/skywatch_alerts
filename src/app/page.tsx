@@ -2,11 +2,13 @@
 
 // 1. Import useState, useEffect, and the ArrowUp icon
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import LiveRadar from "@/components/map/LiveRadar";
 import { useAuth } from "@/hooks/UseAuth";
 import { auth } from "@/lib/flights/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { LogIn, ArrowUp } from "lucide-react"; // <-- Added ArrowUp
+import { FaChartLine, FaBell } from "react-icons/fa";
 import StarfieldBackground from '@/components/StarfieldBackground';
 
 export default function Home() {
@@ -84,9 +86,44 @@ export default function Home() {
           <LiveRadar />
         </div>
 
+        {/* Quick Actions */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+            <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+              <FaChartLine className="text-blue-400" />
+              Flight Statistics
+            </h3>
+            <p className="text-slate-300 mb-4">
+              View real-time analytics of nearby air traffic including altitude distribution, speed analysis, and flight patterns.
+            </p>
+            <Link 
+              href="/statistics" 
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-300"
+            >
+              View Statistics
+            </Link>
+          </div>
+          
+          <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+            <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+              <FaBell className="text-yellow-400" />
+              Flight Alerts
+            </h3>
+            <p className="text-slate-300 mb-4">
+              Set up custom alerts to get notified when aircraft enter your defined radius. Perfect for aviation enthusiasts!
+            </p>
+            <Link 
+              href="/alerts" 
+              className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors duration-300"
+            >
+              {user ? 'Manage Alerts' : 'Sign in for Alerts'}
+            </Link>
+          </div>
+        </div>
+
         <div className="mt-8 text-center">
           <p className="text-slate-400">
-            Real-time flight tracking with proximity alerts
+            Real-time flight tracking with proximity alerts and detailed analytics
           </p>
         </div>
 

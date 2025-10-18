@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, Mail, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, Mail, LogIn, LogOut, User as UserIcon, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/hooks/UseAuth';
 import { auth } from '@/lib/flights/firebase';
 import { signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
@@ -13,6 +13,7 @@ import { signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 const allNavLinks = [
   { href: '/', label: 'Live Radar', icon: Radar, protected: false },
   { href: '/alerts', label: 'Alerts', icon: ShieldAlert, protected: true },
+  { href: '/statistics', label: 'Statistics', icon: BarChart3, protected: false },
   { href: '/about', label: 'About', icon: Info, protected: false },
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, protected: true },
   { href: '/contact', label: 'Contact us', icon: Mail, protected: false },
