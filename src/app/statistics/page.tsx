@@ -8,11 +8,13 @@ import {
   FaTachometerAlt, 
   FaRuler, 
   FaClock,
-  FaMapMarkerAlt 
+  FaMapMarkerAlt,
+  FaDatabase 
 } from "react-icons/fa";
 import useLocation from "@/hooks/useLocation";
 import { fetchNearbyFlights } from "@/lib/flights/adsbClient";
 import { FlightData } from "@/types/flight";
+import { generateDynamicSeedData, defaultCoords } from "@/lib/flights/seedData";
 
 interface FlightStats {
   totalFlights: number;
@@ -32,6 +34,7 @@ export default function StatisticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [usingSeedData, setUsingSeedData] = useState(false);
 
   const calculateStats = (flightData: FlightData[]): FlightStats => {
     if (flightData.length === 0) {
@@ -78,22 +81,51 @@ export default function StatisticsPage() {
   };
 
   useEffect(() => {
-    if (!coords) return;
-
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const flightsData = await fetchNearbyFlights(
-          coords.latitude,
-          coords.longitude,
-          100 // Increase radius for better statistics
-        );
-        setFlights(flightsData);
-        setStats(calculateStats(flightsData));
+        
+        // Use provided coordinates or fall back to default location
+        const currentCoords = coords || defaultCoords;
+        
+        try {
+          // Try to fetch real flight data
+          const flightsData = await fetchNearbyFlights(
+            currentCoords.latitude,
+            currentCoords.longitude,
+            100 // Increase radius for better statistics
+          );
+          
+          if (flightsData.length > 0) {
+            setFlights(flightsData);
+            setStats(calculateStats(flightsData));
+            setUsingSeedData(false);
+          } else {
+            // If no real data, use seed data
+            const seedData = generateDynamicSeedData();
+            setFlights(seedData);
+            setStats(calculateStats(seedData));
+            setUsingSeedData(true);
+          }
+        } catch (apiError) {
+          // If API fails, fall back to seed data
+          const seedData = generateDynamicSeedData();
+          setFlights(seedData);
+          setStats(calculateStats(seedData));
+          setUsingSeedData(true);
+          console.log("Using seed data due to API error:", apiError);
+        }
+        
         setLastUpdated(new Date());
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load flight data');
+        // Final fallback to seed data
+        const seedData = generateDynamicSeedData();
+        setFlights(seedData);
+        setStats(calculateStats(seedData));
+        setUsingSeedData(true);
+        setError(null); // Clear error since we have seed data
+        setLastUpdated(new Date());
       } finally {
         setLoading(false);
       }
@@ -198,13 +230,23 @@ export default function StatisticsPage() {
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
           <FaChartLine className="text-blue-500" />
           Flight Statistics
+          {usingSeedData && (
+            <span className="text-sm bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-2 py-1 rounded-full flex items-center gap-1">
+              <FaDatabase className="text-xs" />
+              Demo Data
+            </span>
+          )}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Real-time analytics of nearby air traffic in your area
+          {usingSeedData 
+            ? "Demo analytics showing sample air traffic data (location permissions not required)"
+            : "Real-time analytics of nearby air traffic in your area"
+          }
         </p>
         {lastUpdated && (
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
             Last updated: {lastUpdated.toLocaleTimeString()}
+            {usingSeedData && " (using sample data)"}
           </p>
         )}
       </div>
