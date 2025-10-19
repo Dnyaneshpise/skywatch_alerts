@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import StarfieldBackground from '../../components/StarfieldBackground';
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FaPlane, FaFighterJet, FaUser } from "react-icons/fa";
@@ -141,6 +142,8 @@ export default function AlertsPage() {
   };
 
   return (
+  <>
+    <StarfieldBackground />
     <main className="max-w-5xl mx-auto px-4 py-10 text-gray-900 dark:text-white">
       <h1 className="text-3xl font-bold mb-6">Flight Alerts</h1>
 
@@ -317,5 +320,6 @@ export default function AlertsPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

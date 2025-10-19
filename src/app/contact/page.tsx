@@ -1,24 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Loader2, MessageSquareText } from "lucide-react";
-
-// (All the type definitions and state logic from before remain the same)
-// ...
-type FormData = {
-  name: string;
-  email: string;
-  subject: string;
-  topic: string;
-  message: string;
-};
-
-type Status = {
-  submitting: boolean;
-  message: string;
-  type: "success" | "error" | "";
-};
-
+import StarfieldBackground from '../../components/StarfieldBackground';
 export default function ContactPage() {
   const initialFormData: FormData = {
     name: "",
@@ -115,6 +98,8 @@ export default function ContactPage() {
     } text-white placeholder-gray-400 rounded-md p-3 focus:ring-2 focus:ring-cyan-500/50 transition`; // <-- Added focus ring
 
   return (
+    <>
+    <StarfieldBackground />
     <main className="min-h-screen bg-slate-900 py-16 px-4 md:px-8 lg:px-16">
       <div className="max-w-3xl mx-auto bg-slate-800 border border-cyan-400 shadow-lg rounded-2xl p-8 text-white">
         <h1 className="text-3xl font-bold mb-8 text-center text-cyan-400 flex items-center justify-center gap-2">
@@ -293,5 +278,6 @@ export default function ContactPage() {
         </form>
       </div>
     </main>
+    </>
   );
 }
