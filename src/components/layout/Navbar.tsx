@@ -10,33 +10,23 @@ import { useAuth } from '@/hooks/UseAuth';
 import { auth } from '@/lib/flights/firebase';
 import { signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
+// Fixed: Removed the duplicate Profile link from navLinks
 const allNavLinks = [
   { href: '/', label: 'Live Radar', icon: Radar, protected: false },
   { href: '/alerts', label: 'Alerts', icon: ShieldAlert, protected: true },
   { href: '/statistics', label: 'Statistics', icon: BarChart3, protected: false },
   { href: '/about', label: 'About', icon: Info, protected: false },
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, protected: true },
+  // { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, protected: true },
   { href: '/contact', label: 'Contact us', icon: Mail, protected: false },
-  { href: '/profile', label: 'Profile', icon: UserIcon, protected: true }, // Added Profile link
-];
-
-
-// import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, Mail} from 'lucide-react';
-
-const navLinks = [
-  { href: '/', label: 'Live Radar', icon: Radar },
-  { href: '/alerts', label: 'Alerts', icon: ShieldAlert },
-  { href: '/about', label: 'About', icon: Info },
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard  },
-  { href: '/contact', label: 'Contact us', icon: Mail },
-
+  // Profile link removed from here since it's handled in AuthButtons
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useAuth(); // DEBUG: Removed 'loading' for now to force render
+  const { user } = useAuth();
 
+  // Filter protected links based on authentication
   const navLinks = allNavLinks.filter(link => !link.protected || !!user);
 
   useEffect(() => {
@@ -74,54 +64,76 @@ export default function Navbar() {
     }
   };
 
-  // DEBUG: This component will now render immediately without the loading check
+  // Updated AuthButtons
   const AuthButtons = () => {
     return user ? (
       <div className="flex items-center space-x-2">
-        <Link href="/profile" className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-gray-700 hover:bg-gray-600 text-white">
-            <UserIcon className="h-4 w-4" />
-            <span>Profile</span>
-        </Link>
         <button
-            onClick={handleSignOut}
-            className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-red-600 hover:bg-red-700 text-white"
+          onClick={handleSignOut}
+          className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-red-600 hover:bg-red-700 text-white"
         >
-            <LogOut className="h-4 w-4" />
-            <span>Sign Out</span>
+          <LogOut className="h-4 w-4" />
+          <span>Sign Out</span>
         </button>
       </div>
     ) : (
-      <button
-        onClick={handleGoogleSignIn}
-        className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-cyan-500 hover:bg-cyan-600 text-white"
-      >
-        <LogIn className="h-4 w-4" />
-        <span>Sign In with Google</span>
-      </button>
+      <div className="flex items-center space-x-2">
+        <Link
+          href="/signin"
+          className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-slate-700 hover:bg-slate-600 text-white"
+        >
+          <LogIn className="h-4 w-4" />
+          <span>Sign In</span>
+        </Link>
+        <Link
+          href="/signup"
+          className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-cyan-500 hover:bg-cyan-600 text-white"
+        >
+          <UserIcon className="h-4 w-4" />
+          <span>Sign Up</span>
+        </Link>
+      </div>
     );
   };
 
-  // DEBUG: This component will also render immediately
+  // Updated MobileAuthButtons
   const MobileAuthButtons = () => {
     return user ? (
-       <button
-        onClick={handleSignOut}
-        className="flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 bg-red-600/90 text-white hover:bg-red-700"
-      >
-        <LogOut className="h-6 w-6" />
-        <span>Sign Out ({user.email})</span>
-      </button>
+      <div className="space-y-2">
+        <Link
+          href="/profile"
+          className="flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 bg-gray-700/90 text-white hover:bg-gray-600"
+        >
+          <UserIcon className="h-6 w-6" />
+          <span>Profile</span>
+        </Link>
+        <button
+          onClick={handleSignOut}
+          className="flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 bg-red-600/90 text-white hover:bg-red-700"
+        >
+          <LogOut className="h-6 w-6" />
+          <span>Sign Out</span>
+        </button>
+      </div>
     ) : (
-      <button
-        onClick={handleGoogleSignIn}
-        className="flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 bg-cyan-500/90 text-white hover:bg-cyan-600"
-      >
-        <LogIn className="h-6 w-6" />
-        <span>Sign In with Google</span>
-      </button>
+      <div className="space-y-2">
+        <Link
+          href="/signin"
+          className="flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 bg-slate-700/90 text-white hover:bg-slate-600"
+        >
+          <LogIn className="h-6 w-6" />
+          <span>Sign In</span>
+        </Link>
+        <Link
+          href="/signup"
+          className="flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 bg-cyan-500/90 text-white hover:bg-cyan-600"
+        >
+          <UserIcon className="h-6 w-6" />
+          <span>Sign Up</span>
+        </Link>
+      </div>
     );
   };
-
 
   return (
     <>

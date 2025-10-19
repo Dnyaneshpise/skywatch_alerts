@@ -1,15 +1,31 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { 
+  onAuthStateChanged, 
+  User, 
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signOut 
+} from 'firebase/auth';
 import { auth } from '@/lib/flights/firebase';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ 
+  user: null, 
+  loading: true,
+  signIn: async () => {},
+  signUp: async () => {},
+  logout: async () => {}
+});
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -21,14 +37,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
-  const value = { user, loading };
+  const signIn = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password);
+  };
 
-  // FIX: We will now render children immediately.
-  // The components inside will use the 'loading' state to decide what to display.
+  const signUp = async (email: string, password: string, displayName?: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    if (displayName) {
+      await updateProfile(userCredential.user, { displayName });
+    }
+  };
+
+  const logout = async () => {
+    await signOut(auth);
+  };
+
+  const value = { user, loading, signIn, signUp, logout };
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
