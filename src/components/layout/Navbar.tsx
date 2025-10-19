@@ -68,6 +68,13 @@ export default function Navbar() {
   const AuthButtons = () => {
     return user ? (
       <div className="flex items-center space-x-2">
+        <Link
+          href="/profile"
+          className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-gray-700 hover:bg-gray-600 text-white"
+        >
+          <UserIcon className="h-4 w-4" />
+          <span>Profile</span>
+        </Link>
         <button
           onClick={handleSignOut}
           className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 bg-red-600 hover:bg-red-700 text-white"
@@ -157,9 +164,8 @@ export default function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`relative flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 hover:text-cyan-300 ${
-                      isActive ? 'text-cyan-400' : 'text-slate-300'
-                    }`}
+                    className={`relative flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 hover:text-cyan-300 ${isActive ? 'text-cyan-400' : 'text-slate-300'
+                      }`}
                   >
                     <Icon className="h-4 w-4" />
                     <span>{link.label}</span>
@@ -169,9 +175,9 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-               <div className="pl-4">
-                 <AuthButtons />
-               </div>
+              <div className="pl-4">
+                <AuthButtons />
+              </div>
             </div>
 
             {/* Mobile Menu Hamburger Button */}
@@ -213,11 +219,10 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 ${
-                    isActive
+                  className={`flex w-full items-center space-x-4 rounded-lg p-3 text-lg font-medium transition-colors duration-200 ${isActive
                       ? 'bg-cyan-400/90 text-slate-900'
                       : 'text-slate-300 hover:bg-slate-800'
-                  }`}
+                    }`}
                 >
                   <Icon className="h-6 w-6" />
                   <span>{link.label}</span>
