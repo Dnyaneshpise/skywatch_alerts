@@ -43,45 +43,78 @@ Analyze past flight patterns:
 - Browse historical flight paths
 - Understand aircraft behavior over time
 - Useful for research, safety checks, and enthusiasts
-
-
-
-### 🛠️ How It Works
-
-1. **Set Your Location**
    - Allow browser geolocation access **OR**
    - Manually enter coordinates (latitude & longitude)
 
 2. **Configure Alerts**
-   - Choose your alert radius (e.g. 10 km around your location)
-   - Filter by aircraft type or altitude range (optional)
-   - Set your preferred lead time for notifications
-
 3. **Receive Notifications**
    - When a matching flight enters your defined area, you'll receive an email alert in real-time
-
-
-
-## 📦 Tech Stack
 
 - **Frontend**: React / Tailwind CSS / Leaflet.js (Map Rendering)
 - **Backend**: Node.js / Express.js
 - **Database**: MongoDB (Flight logs, user settings)
-- **Flight Data Source**: [OpenSky Network](https://opensky-network.org/) or similar real-time aviation data API
 - **Email Notifications**: NodeMailer / SendGrid
 - **Geolocation**: HTML5 Geolocation API / Manual entry
 
-## 🚀 Quick Start
-### Prerequisites
 
+The repository follows a Next.js (App Router) structure with clearly separated app routes, components, hooks, and libraries.
+
+skywatch_alerts/
+├─ .github/                      # CI workflows and issue templates
+├─ public/                       # Static assets served as-is
+│  ├─ screenshots/               # App screenshots used in README
+│  ├─ marker-icon.png            # Leaflet default marker assets
+│  ├─ marker-icon-2x.png
+│  └─ marker-shadow.png
+├─ src/
+│  ├─ app/                       # Next.js App Router (routes and layouts)
+│  │  ├─ layout.tsx              # Root layout
+│  │  ├─ globals.css             # Global styles (Tailwind base)
+│  │  ├─ about/                  # About page
+│  │  ├─ alerts/                 # Alerts page
+│  │  ├─ contact/                # Contact page
+│  │  ├─ Dashboard/              # Dashboard page
+│  │  ├─ feedback/               # Feedback page/route
+│  │  ├─ profile/                # Profile page
+│  │  └─ api/                    # Route handlers (serverless API)
+│  │     ├─ flights/route.ts     # Proxy to ADS-B/flight data API
+│  │     └─ feedback/route.ts    # Append feedback to temp_DB/response.txt
+│  ├─ components/                # Reusable UI and layout components
+│  │  ├─ layout/Navbar.tsx       # Top navigation bar
+│  │  ├─ Footer.tsx              # Site footer
+│  │  ├─ Header.tsx              # Page header
+│  │  └─ ui/button.tsx           # Shared button component
+│  ├─ hooks/                     # Custom React hooks
+│  │  ├─ UseAuth.tsx             # Firebase auth hook/provider
+│  │  └─ useLocation.ts          # Browser geolocation hook
+│  ├─ lib/                       # Client libraries and integrations
+│  │  └─ flights/
+│  │     ├─ adsbClient.ts        # Fetch and normalize nearby flights
+│  │     └─ firebase.js          # Firebase client/config
+│  └─ types/
+│     └─ flight.ts               # TypeScript types for flight data
+├─ temp_DB/
+│  └─ response.txt               # Temp storage for feedback submissions
+├─ eslint.config.mjs             # ESLint configuration
+├─ next.config.ts                # Next.js configuration
+├─ postcss.config.mjs            # PostCSS (Tailwind CSS) config
+├─ tailwind config (via package) # Tailwind v4 (plugin-based)
+├─ tsconfig.json                 # TypeScript configuration
+├─ package.json                  # Scripts and dependencies
+```
+
+- API routes under `src/app/api/*` run on the server (Edge/Node) and can safely call third-party services.
+- Flight data proxy: `api/flights/route.ts` fetches data from `https://api.adsb.lol/` and normalizes it via `src/lib/flights/adsbClient.ts` on the client.
+
+## � Quick Start
+### Prerequisites
 - Node.js (v14 or higher)
 - MongoDB (local installation or MongoDB Atlas account)
 - npm or yarn
 
 ### Installation
-Checkout [LEARN.md](LEARN.md)
 
-
+## 🚀 Quick Start
 ## 🧪 Use Cases
 
 - **Spotting local aircraft activity**
