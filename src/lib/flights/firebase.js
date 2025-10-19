@@ -7,7 +7,7 @@ const firebaseConfig = {
   authDomain: "skywatch-alerts-f6115.firebaseapp.com",
   projectId: "skywatch-alerts-f6115",
   storageBucket: "skywatch-alerts-f6115.firebasestorage.app",
-  messagingSenderId:  "298776258581",
+  messagingSenderId: "298776258581",
   appId: "1:298776258581:web:0e14bc2df5bd12b6ce861c",
 };
 

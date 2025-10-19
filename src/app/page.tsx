@@ -73,8 +73,36 @@ export default function Home() {
     }
   };
 
+  // 3. Add effect to listen for scroll events
+  useEffect(() => {
+    // Show button when user scrolls down
+    const toggleVisibility = () => {
+      if (window.scrollY > 300) { // Show after scrolling 300px
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener("scroll", toggleVisibility);
+
+    // Clean up the event listener on unmount
+    return () => {
+      window.removeEventListener("scroll", toggleVisibility);
+    };
+  }, []); // Empty dependency array ensures this runs only on mount/unmount
+
+  // 4. Add function to scroll to top
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", // For a smooth scrolling animation
+    });
+  };
+
   return (
-    <main className="container mx-auto py-8 px-4">
+    // 5. Use a Fragment to wrap everything
+    <>
       <StarfieldBackground />
       {/* Sign-In Prompt for Logged-Out Users */}
       {!loading && !user && (
@@ -85,45 +113,25 @@ export default function Home() {
           <p className="text-slate-400 mb-6">
             Sign in to set custom alerts and access your personal dashboard.
           </p>
-          <button
-            onClick={handleGoogleSignIn}
-            className="inline-flex items-center space-x-2 px-6 py-3 rounded-lg text-lg font-medium transition-all duration-300 bg-cyan-500 hover:bg-cyan-600 text-white shadow-md hover:shadow-lg"
-          >
-            <LogIn className="h-5 w-5" />
-            <span>Sign In with Google</span>
-          </button>
         </div>
-      )}
 
-      {/* Live Radar Map */}
-      <div className="bg-slate-800/50 rounded-xl shadow-lg p-4 border border-slate-700/50">
-        <LiveRadar />
-      </div>
+        {/* This is just to add extra space so you can test scrolling.
+          You can remove this div.
+        */}
+        <div className="h-[1000px]"></div>
 
-      <div className="mt-8 text-center">
-        <p className="text-slate-400">
-          Real-time flight tracking with proximity alerts
-        </p>
-      </div>
+      </main>
 
-      {/* --- ADDED CHAT FEATURES --- */}
-
-      {/* Chat Bubble Button (Floating) */}
-      {/* It's hidden if the chat is already open */}
-      {!isChatOpen && (
+      {/* 7. Add the Scroll-to-Top Button */}
+      {isVisible && (
         <button
-          onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-4 right-4 sm:right-8 p-4 rounded-full bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg transition-all duration-300 z-40 animate-pulse"
-          aria-label="Open community chat"
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-cyan-500 text-white hover:bg-cyan-600 transition-all duration-300 shadow-lg animate-fade-in"
+          aria-label="Scroll to top"
         >
-          <MessageSquare className="h-6 w-6" />
+          <ArrowUp className="h-6 w-6" />
         </button>
       )}
-
-      {/* Chat Window (Conditionally Rendered) */}
-      {isChatOpen && <CommunityChat onClose={() => setIsChatOpen(false)} />}
-
-      {/* --- END OF ADDED FEATURES --- */}
-    </main>
+    </>
   );
 }
