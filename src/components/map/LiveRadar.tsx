@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import useLocation from '@/hooks/useLocation';
 import { fetchNearbyFlights } from '@/lib/flights/adsbClient';
 import { FlightData } from '@/types/flight';
+import { generateDynamicSeedData, defaultCoords } from '@/lib/flights/seedData';
 
 // Dynamically import Leaflet with SSR disabled
 const MapContainer = dynamic(
@@ -55,10 +56,9 @@ export default function LiveRadar() {
   const [flights, setFlights] = useState<FlightData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [usingSeedData, setUsingSeedData] = useState(false);
 
   useEffect(() => {
-    if (!coords) return;
-
     let mounted = true;
     const abortController = new AbortController();
 
@@ -66,16 +66,43 @@ export default function LiveRadar() {
       try {
         setLoading(true);
         setError(null);
-        const flightsData = await fetchNearbyFlights(
-          coords.latitude,
-          coords.longitude
-        );
-        if (mounted) {
-          setFlights(flightsData);
+        
+        // Use provided coordinates or fall back to default location (NYC)
+        const currentCoords = coords || defaultCoords;
+        
+        try {
+          // Try to fetch real flight data
+          const flightsData = await fetchNearbyFlights(
+            currentCoords.latitude,
+            currentCoords.longitude
+          );
+          
+          if (mounted) {
+            if (flightsData.length > 0) {
+              setFlights(flightsData);
+              setUsingSeedData(false);
+            } else {
+              // If no real data, use seed data
+              const seedData = generateDynamicSeedData();
+              setFlights(seedData);
+              setUsingSeedData(true);
+            }
+          }
+        } catch (apiError) {
+          // If API fails, fall back to seed data
+          if (mounted) {
+            const seedData = generateDynamicSeedData();
+            setFlights(seedData);
+            setUsingSeedData(true);
+          }
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load flight data');
+          // Final fallback to seed data
+          const seedData = generateDynamicSeedData();
+          setFlights(seedData);
+          setUsingSeedData(true);
+          setError(null); // Clear error since we have seed data
         }
       } finally {
         if (mounted) {
@@ -143,6 +170,12 @@ export default function LiveRadar() {
     // ✅ FIX 2: Added z-0 to create a new stacking context for the map.
     // This "traps" Leaflet's high internal z-indexes below the navbar.
     <div className="w-full min-h-[300px] h-[60vh] sm:h-[70vh] md:h-[600px] relative rounded-lg overflow-hidden border z-0">
+      {usingSeedData && (
+        <div className="absolute top-2 left-2 z-20 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-3 py-1 rounded-full text-sm font-medium">
+          📊 Demo Data
+        </div>
+      )}
+      
       {loading && (
         // The loading overlay's z-10 is now relative to this container's z-0 context.
         <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
@@ -154,7 +187,7 @@ export default function LiveRadar() {
       )}
       
       <MapContainer
-        center={[coords.latitude, coords.longitude]}
+        center={[coords?.latitude || defaultCoords.latitude, coords?.longitude || defaultCoords.longitude]}
         zoom={12}
         className="h-full"
       >
@@ -163,11 +196,15 @@ export default function LiveRadar() {
           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
-        <Marker position={[coords.latitude, coords.longitude]}>
+        <Marker position={[coords?.latitude || defaultCoords.latitude, coords?.longitude || defaultCoords.longitude]}>
           <Popup>
             <div className="min-w-[200px]">
-              <div className="font-bold text-lg">Your Location</div>
-              <div className="text-gray-700">{formatted}</div>
+              <div className="font-bold text-lg">
+                {coords ? "Your Location" : "Demo Location (NYC)"}
+              </div>
+              <div className="text-gray-700">
+                {formatted || "New York City, NY"}
+              </div>
             </div>
           </Popup>
         </Marker>
