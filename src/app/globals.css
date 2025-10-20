@@ -107,3 +107,11 @@
 .animate-fade-in {
   animation: fade-in 1s ease-in-out;
 }
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 4s ease-in-out infinite;
+}
