@@ -103,7 +103,14 @@ export default function Home() {
               View Statistics
             </Link>
           </div>
-          
+          <div className="mt-8 text-center">
+  <Link
+    href="/fun-section"
+    className="inline-flex items-center gap-2 px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all duration-300 shadow-md"
+  >
+    Fun Section
+  </Link>
+</div>
           <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
             <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
               <FaBell className="text-yellow-400" />
