@@ -43,22 +43,24 @@ Analyze past flight patterns:
 - Browse historical flight paths
 - Understand aircraft behavior over time
 - Useful for research, safety checks, and enthusiasts
+
+### 🛠️ How It Works
+
+1. **Set Your Location**
    - Allow browser geolocation access **OR**
    - Manually enter coordinates (latitude & longitude)
 
 2. **Configure Alerts**
+   - Choose your alert radius (e.g. 10 km around your location)
+   - Filter by aircraft type or altitude range (optional)
+   - Set your preferred lead time for notifications
+
 3. **Receive Notifications**
    - When a matching flight enters your defined area, you'll receive an email alert in real-time
 
-- **Frontend**: React / Tailwind CSS / Leaflet.js (Map Rendering)
-- **Backend**: Node.js / Express.js
-- **Database**: MongoDB (Flight logs, user settings)
-- **Email Notifications**: NodeMailer / SendGrid
-- **Geolocation**: HTML5 Geolocation API / Manual entry
-
-
+## 📁 Project Structure
 The repository follows a Next.js (App Router) structure with clearly separated app routes, components, hooks, and libraries.
-
+```
 skywatch_alerts/
 ├─ .github/                      # CI workflows and issue templates
 ├─ public/                       # Static assets served as-is
@@ -102,19 +104,29 @@ skywatch_alerts/
 ├─ tsconfig.json                 # TypeScript configuration
 ├─ package.json                  # Scripts and dependencies
 ```
-
 - API routes under `src/app/api/*` run on the server (Edge/Node) and can safely call third-party services.
 - Flight data proxy: `api/flights/route.ts` fetches data from `https://api.adsb.lol/` and normalizes it via `src/lib/flights/adsbClient.ts` on the client.
 
-## � Quick Start
+## 📦 Tech Stack
+
+- **Frontend**: React / Tailwind CSS / Leaflet.js (Map Rendering)
+- **Backend**: Node.js / Express.js
+- **Database**: MongoDB (Flight logs, user settings)
+- **Flight Data Source**: [OpenSky Network](https://opensky-network.org/) or similar real-time aviation data API
+- **Email Notifications**: NodeMailer / SendGrid
+- **Geolocation**: HTML5 Geolocation API / Manual entry
+
+## 🚀 Quick Start
 ### Prerequisites
+
 - Node.js (v14 or higher)
 - MongoDB (local installation or MongoDB Atlas account)
 - npm or yarn
 
 ### Installation
+Checkout [LEARN.md](LEARN.md)
 
-## 🚀 Quick Start
+
 ## 🧪 Use Cases
 
 - **Spotting local aircraft activity**
@@ -123,20 +135,20 @@ skywatch_alerts/
 - **General curiosity about flights above you**
 
 ## 🔧 Additional Setup Details
-** Getting API Credentials
+**Getting API Credentials**
 - OpenSky Network API
-   1.Register at https://opensky-network.org/
-   2.Free accounts have limited requests per day
+   1. Register at https://opensky-network.org/
+   2. Free accounts have limited requests per day
 
 - Mapbox Access Token
-   1.Create a free account at https://www.mapbox.com/
-   2.Generate an access token from your account dashboard
+   1. Create a free account at https://www.mapbox.com/
+   2. Generate an access token from your account dashboard
 
-- Email Service Setup
+- Email Service Setup  <br>
    For Gmail, you'll need to generate an App Password:
-      1.Enable 2-factor authentication on your Google account
-      2.Go to Google Account Settings > Security > App passwords
-      3.Generate a password for SkyWatch Alerts
+  1. Enable 2-factor authentication on your Google account
+  2. Go to Google Account Settings > Security > App passwords
+  3. Generate a password for SkyWatch Alerts
 
 ## 📸 Screenshots
 
@@ -202,5 +214,3 @@ Common issues and solutions:
 If you find this project useful, please give it a star on GitHub!
 
 ---
-
-
