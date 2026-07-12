@@ -106,14 +106,16 @@ skywatch_alerts/
 ```
 - API routes under `src/app/api/*` run on the server (Edge/Node) and can safely call third-party services.
 - Flight data proxy: `api/flights/route.ts` fetches data from `https://api.adsb.lol/` and normalizes it via `src/lib/flights/adsbClient.ts` on the client.
+- Alerts and feedback are now persisted in Firebase Firestore. Protected pages use a Firebase-backed session cookie, and alert checks can be run from `POST /api/alerts/check` with `CRON_SECRET`.
+- Real notifications require either `RESEND_API_KEY` + `ALERT_FROM_EMAIL` or `ALERT_WEBHOOK_URL`; see `.env.local.example`.
 
 ## 📦 Tech Stack
 
 - **Frontend**: React / Tailwind CSS / Leaflet.js (Map Rendering)
-- **Backend**: Node.js / Express.js
-- **Database**: MongoDB (Flight logs, user settings)
-- **Flight Data Source**: [OpenSky Network](https://opensky-network.org/) or similar real-time aviation data API
-- **Email Notifications**: NodeMailer / SendGrid
+- **Backend**: Next.js route handlers
+- **Database**: Firebase Firestore
+- **Flight Data Source**: ADS-B.lol nearby aircraft API
+- **Email Notifications**: Resend API or a custom alert webhook
 - **Geolocation**: HTML5 Geolocation API / Manual entry
 
 ## 🚀 Quick Start

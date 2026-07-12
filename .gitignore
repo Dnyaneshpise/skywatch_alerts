@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+.codex/
+.codex-*
+codex-metadata/
 
 # debug
 npm-debug.log*

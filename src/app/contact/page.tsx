@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Send, Loader2, MessageSquareText } from "lucide-react";
+import { useAuth } from "@/hooks/UseAuth";
 
 // (All the type definitions and state logic from before remain the same)
 // ...
@@ -20,6 +21,7 @@ type Status = {
 };
 
 export default function ContactPage() {
+  const { user } = useAuth();
   const initialFormData: FormData = {
     name: "",
     email: "",
@@ -80,9 +82,13 @@ export default function ContactPage() {
     setStatus({ submitting: true, message: "", type: "" });
     setErrors({});
     try {
+      const token = await user?.getIdToken();
       const res = await fetch("/api/feedback", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(formData),
       });
       const data = await res.json();

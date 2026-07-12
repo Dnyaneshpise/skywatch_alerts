@@ -121,34 +121,6 @@ export default function LiveRadar() {
     };
   }, [coords]);
 
-  if (locationError) {
-    return (
-      <div className="h-[600px] flex items-center justify-center bg-red-50 rounded-lg">
-        <div className="text-center p-6 max-w-md">
-          <div className="text-red-500 font-bold text-xl mb-2">Location Error</div>
-          <p className="text-gray-700 mb-4">{locationError}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 border border-gray-300 rounded bg-white hover:bg-gray-100"
-          >
-            Reload Page
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!coords) {
-    return (
-      <div className="h-[600px] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p>Detecting your location...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="h-[600px] flex items-center justify-center bg-yellow-50 rounded-lg">
@@ -175,7 +147,12 @@ export default function LiveRadar() {
           📊 Demo Data
         </div>
       )}
-      
+      {!coords && (
+        <div className="absolute top-2 right-2 z-20 max-w-xs bg-slate-900/90 text-slate-100 px-3 py-2 rounded-md text-xs shadow-lg">
+          {locationError || "Detecting location. Showing demo location for now."}
+        </div>
+      )}
+
       {loading && (
         // The loading overlay's z-10 is now relative to this container's z-0 context.
         <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">

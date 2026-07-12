@@ -27,7 +27,7 @@ export default function Header() {
             <button onClick={handleSignOut}>Sign Out</button>
           </>
         ) : (
-          <Link href="/login">Sign In</Link>
+          <Link href="/signin">Sign In</Link>
         )}
       </div>
     </nav>

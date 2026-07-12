@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Send, Loader2, MessageSquare } from "lucide-react";
+import { useAuth } from "@/hooks/UseAuth";
 
 type Status = {
     submitting: boolean;
@@ -10,6 +11,7 @@ type Status = {
 };
 
 export default function FeedbackPage() {
+    const { user } = useAuth();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [message, setMessage] = useState("");
@@ -24,9 +26,13 @@ export default function FeedbackPage() {
 
         setStatus({ submitting: true, message: "", type: "" });
         try {
+            const token = await user?.getIdToken();
             const res = await fetch("/api/feedback", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
                 body: JSON.stringify({ name, email, message }),
             });
             const data = await res.json();
