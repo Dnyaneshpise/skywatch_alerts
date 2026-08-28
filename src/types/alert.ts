@@ -9,6 +9,7 @@ export interface FlightAlert {
   notifyBefore: number;
   expiresAt: string;
   email: string;
+  telegramChatId?: string;
   lat: number;
   lon: number;
   active: boolean;

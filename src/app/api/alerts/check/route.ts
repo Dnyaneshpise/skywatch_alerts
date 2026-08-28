@@ -28,20 +28,13 @@ export async function POST(request: Request) {
     const results = await firestoreRunQuery<QueryResult[]>({
       structuredQuery: {
         from: [{ collectionId: "alerts", allDescendants: true }],
-        where: {
-          fieldFilter: {
-            field: { fieldPath: "active" },
-            op: "EQUAL",
-            value: { booleanValue: true },
-          },
-        },
       },
     });
 
     const alerts = results
       .filter((result) => result.document)
       .map((result) => toAlert(result.document as FirestoreDocument))
-      .filter((alert) => !isAlertExpired(alert) && !shouldSkipRecentlyTriggered(alert));
+      .filter((alert) => alert.active && !isAlertExpired(alert) && !shouldSkipRecentlyTriggered(alert));
 
     const checked = [];
 
@@ -68,21 +61,43 @@ export async function POST(request: Request) {
 
       if (flights.length === 0) continue;
 
-      const provider = await sendAlertNotification(alert, flights);
-      const lastTriggeredAt = new Date().toISOString();
-      await firestoreRequest(`users/${alert.userId}/alerts/${alert.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          fields: toFirestoreFields({ ...alert, lastTriggeredAt, updatedAt: lastTriggeredAt }),
-        }),
-      });
-      checked.push({ alertId: alert.id, matches: flights.length, provider });
+      try {
+        const provider = await sendAlertNotification(alert, flights);
+        const lastTriggeredAt = new Date().toISOString();
+        await firestoreRequest(`users/${alert.userId}/alerts/${alert.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            fields: toFirestoreFields({ ...alert, lastTriggeredAt, updatedAt: lastTriggeredAt }),
+          }),
+        });
+        checked.push({ alertId: alert.id, matches: flights.length, provider, sent: true });
+      } catch (error) {
+        checked.push({
+          alertId: alert.id,
+          matches: flights.length,
+          sent: false,
+          error: error instanceof Error ? error.message : "Notification failed",
+        });
+      }
     }
 
     return NextResponse.json({ checked });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected alert check error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const setupProblem =
+      message.includes("FIREBASE_SERVICE_ACCOUNT") ||
+      message.includes("Bad control character") ||
+      message.includes("Failed to create Firebase service token") ||
+      message.includes("private_key");
+
+    return NextResponse.json(
+      {
+        error: setupProblem
+          ? `Alert check setup error: ${message}. Re-create FIREBASE_SERVICE_ACCOUNT as base64 from the downloaded Firebase service-account JSON, then restart npm run dev.`
+          : message,
+      },
+      { status: setupProblem ? 503 : 500 },
+    );
   }
 }
 

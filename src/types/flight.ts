@@ -7,4 +7,10 @@ export interface FlightData {
   velocity: number;
   heading: number;
   timestamp: number;
+  aircraftType?: string;
+  category?: string;
+  registration?: string;
+  squawk?: string;
+  emergency?: string;
+  verticalRate?: number;
 }

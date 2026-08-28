@@ -11,11 +11,13 @@ export function normalizeAlertInput(input: Record<string, unknown>, userId: stri
   const lon = Number(input.lon);
   const expiresAt = String(input.expiresAt ?? "");
   const email = String(input.email ?? "").trim();
+  const telegramChatId = String(input.telegramChatId ?? "").trim();
   const name = String(input.name ?? "").trim();
 
   if (!validTypes.has(type)) throw new Error("Invalid alert type");
   if (!name) throw new Error("Alert name is required");
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Valid email is required");
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Email must be valid");
+  if (!email && !telegramChatId) throw new Error("Add an email or Telegram chat ID for notifications");
   if (!Number.isFinite(distance) || distance <= 0 || distance > 500) throw new Error("Distance must be between 1 and 500 km");
   if (!Number.isFinite(notifyBefore) || notifyBefore <= 0 || notifyBefore > 180) throw new Error("Notify time must be between 1 and 180 minutes");
   if (!Number.isFinite(lat) || lat < -90 || lat > 90) throw new Error("Latitude must be between -90 and 90");
@@ -30,6 +32,7 @@ export function normalizeAlertInput(input: Record<string, unknown>, userId: stri
     notifyBefore,
     expiresAt: new Date(expiresAt).toISOString(),
     email,
+    ...(telegramChatId ? { telegramChatId } : {}),
     lat,
     lon,
     active: Boolean(input.active ?? true),

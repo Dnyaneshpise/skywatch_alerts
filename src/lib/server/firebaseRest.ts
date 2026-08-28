@@ -244,9 +244,14 @@ function readServiceAccount() {
     ? raw
     : Buffer.from(raw, "base64").toString("utf8");
 
-  return JSON.parse(value.replace(/\\n/g, "\n")) as {
+  const serviceAccount = JSON.parse(value) as {
     client_email: string;
     private_key: string;
+  };
+
+  return {
+    ...serviceAccount,
+    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),
   };
 }
 

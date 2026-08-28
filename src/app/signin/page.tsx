@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/flights/firebase';
 import { useAuth } from '@/hooks/UseAuth';
 import { Mail, Lock, LogIn, ArrowRight, Shield, Eye, EyeOff } from 'lucide-react';
@@ -13,7 +13,9 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const router = useRouter();
   const { user } = useAuth();
 
@@ -28,6 +30,7 @@ export default function SignInPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setMessage('');
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -42,6 +45,7 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setError('');
+    setMessage('');
 
     try {
       const provider = new GoogleAuthProvider();
@@ -56,6 +60,26 @@ export default function SignInPage() {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleForgotPassword = async () => {
+    setError('');
+    setMessage('');
+
+    if (!email.trim()) {
+      setError('Enter your email address first, then click Forgot password.');
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      setMessage('Password reset email sent. Check your inbox.');
+    } catch (error: any) {
+      setError(error.message || 'Failed to send password reset email');
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   return (
@@ -76,6 +100,12 @@ export default function SignInPage() {
         {error && (
           <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
             <p className="text-red-400 text-sm">{error}</p>
+          </div>
+        )}
+
+        {message && (
+          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+            <p className="text-green-400 text-sm">{message}</p>
           </div>
         )}
 
@@ -149,6 +179,16 @@ export default function SignInPage() {
                 ) : (
                   <Eye className="h-4 w-4" />
                 )}
+              </button>
+            </div>
+            <div className="mt-2 text-right">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={resetLoading || loading}
+                className="text-sm font-medium text-cyan-400 hover:text-cyan-300 disabled:opacity-60"
+              >
+                {resetLoading ? 'Sending reset email...' : 'Forgot password?'}
               </button>
             </div>
           </div>

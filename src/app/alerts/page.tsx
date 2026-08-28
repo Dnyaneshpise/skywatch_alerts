@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -8,6 +9,18 @@ import { FaFighterJet, FaPlane, FaUser } from "react-icons/fa";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/UseAuth";
 import type { FlightAlert, AlertType } from "@/types/alert";
+
+const AlertLocationPicker = dynamic(
+  () => import("@/components/alerts/AlertLocationPicker"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="sm:col-span-2 h-[360px] rounded-lg border border-slate-700 bg-slate-900/40 flex items-center justify-center text-slate-300">
+        Loading map picker...
+      </div>
+    ),
+  },
+);
 
 type AlertForm = {
   name: string;
@@ -44,6 +57,14 @@ export default function AlertsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [telegram, setTelegram] = useState({
+    connected: false,
+    chatId: "",
+    username: "",
+    loading: false,
+    pending: false,
+    message: "",
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -81,6 +102,50 @@ export default function AlertsPage() {
     }
   }, [user]);
 
+  const loadTelegramStatus = useCallback(async () => {
+    if (!user) return;
+
+    setTelegram((current) => ({ ...current, loading: true }));
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("/api/telegram/status", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to load Telegram status");
+
+      setTelegram((current) => ({
+        ...current,
+        connected: Boolean(data.connected),
+        chatId: data.chatId || "",
+        username: data.username || "",
+        loading: false,
+        pending: data.connected ? false : current.pending,
+        message: data.connected ? "Telegram alerts are connected." : current.message,
+      }));
+    } catch (err) {
+      setTelegram((current) => ({
+        ...current,
+        loading: false,
+        message: err instanceof Error ? err.message : "Failed to load Telegram status",
+      }));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadTelegramStatus();
+  }, [loadTelegramStatus]);
+
+  useEffect(() => {
+    if (!showForm || !telegram.pending || telegram.connected) return;
+
+    const interval = window.setInterval(() => {
+      loadTelegramStatus();
+    }, 4000);
+
+    return () => window.clearInterval(interval);
+  }, [loadTelegramStatus, showForm, telegram.connected, telegram.pending]);
+
   const filteredAlerts = useMemo(
     () =>
       alerts
@@ -88,6 +153,35 @@ export default function AlertsPage() {
         .filter((alert) => alert.name.toLowerCase().includes(searchTerm.toLowerCase())),
     [alerts, searchTerm, selectedFilter],
   );
+
+  const connectTelegram = async () => {
+    if (!user) return;
+
+    setTelegram((current) => ({ ...current, loading: true, message: "" }));
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("/api/telegram/link", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to create Telegram link");
+
+      window.open(data.url, "_blank", "noopener,noreferrer");
+      setTelegram((current) => ({
+        ...current,
+        loading: false,
+        pending: true,
+        message: "Telegram opened. Press Start in the bot, then this page will update automatically.",
+      }));
+    } catch (err) {
+      setTelegram((current) => ({
+        ...current,
+        loading: false,
+        message: err instanceof Error ? err.message : "Failed to connect Telegram",
+      }));
+    }
+  };
 
   const saveAlert = async () => {
     if (!user) return;
@@ -104,6 +198,7 @@ export default function AlertsPage() {
         },
         body: JSON.stringify({
           ...newAlert,
+          telegramChatId: telegram.connected ? telegram.chatId : "",
           name: newAlert.name || `${newAlert.type} flights within ${newAlert.distance}km`,
           expiresAt: new Date(newAlert.expiresAt).toISOString(),
         }),
@@ -228,9 +323,22 @@ export default function AlertsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
               <FormInput label="Alert Name" value={newAlert.name} onChange={(value) => setNewAlert({ ...newAlert, name: value })} placeholder="Nearby flights" />
               <FormInput label="Notification Email" type="email" value={newAlert.email} onChange={(value) => setNewAlert({ ...newAlert, email: value })} placeholder="you@example.com" />
-              <NumberInput label="Latitude" value={newAlert.lat} onChange={(value) => setNewAlert({ ...newAlert, lat: value })} />
-              <NumberInput label="Longitude" value={newAlert.lon} onChange={(value) => setNewAlert({ ...newAlert, lon: value })} />
-              <NumberInput label="Distance (km)" value={newAlert.distance} min={1} max={500} onChange={(value) => setNewAlert({ ...newAlert, distance: value })} />
+              <TelegramConnectCard
+                connected={telegram.connected}
+                loading={telegram.loading}
+                pending={telegram.pending}
+                username={telegram.username}
+                message={telegram.message}
+                onConnect={connectTelegram}
+                onRefresh={loadTelegramStatus}
+              />
+              <AlertLocationPicker
+                lat={newAlert.lat}
+                lon={newAlert.lon}
+                radiusKm={newAlert.distance}
+                onLocationChange={(location) => setNewAlert({ ...newAlert, ...location })}
+                onRadiusChange={(distance) => setNewAlert({ ...newAlert, distance })}
+              />
               <NumberInput label="Notify Cooldown (minutes)" value={newAlert.notifyBefore} min={1} max={180} onChange={(value) => setNewAlert({ ...newAlert, notifyBefore: value })} />
               <FormInput label="Expiration Date" type="date" value={newAlert.expiresAt} onChange={(value) => setNewAlert({ ...newAlert, expiresAt: value })} />
               <div>
@@ -286,7 +394,8 @@ export default function AlertsPage() {
                     <p>Alert when within {alert.distance} km of {alert.lat.toFixed(4)}, {alert.lon.toFixed(4)}</p>
                     <p>Cooldown: {alert.notifyBefore} minutes between notifications</p>
                     <p>Expires: {new Date(alert.expiresAt).toLocaleDateString()}</p>
-                    <p>Email: {alert.email}</p>
+                    {alert.email && <p>Email: {alert.email}</p>}
+                    {alert.telegramChatId && <p>Telegram: {alert.telegramChatId}</p>}
                     {alert.lastTriggeredAt && <p>Last sent: {new Date(alert.lastTriggeredAt).toLocaleString()}</p>}
                   </div>
                 </div>
@@ -321,17 +430,74 @@ export default function AlertsPage() {
   );
 }
 
+function TelegramConnectCard({
+  connected,
+  loading,
+  pending,
+  username,
+  message,
+  onConnect,
+  onRefresh,
+}: {
+  connected: boolean;
+  loading: boolean;
+  pending: boolean;
+  username: string;
+  message: string;
+  onConnect: () => void;
+  onRefresh: () => void;
+}) {
+  return (
+    <div className="rounded-md border border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Telegram Alerts</label>
+          <p className="text-sm text-slate-400">
+            {connected
+              ? `Connected${username ? ` to @${username}` : ""}.`
+              : "Open Telegram and press Start on the bot. SkyWatch will save the chat automatically."}
+          </p>
+          {message && <p className="mt-2 text-xs text-cyan-300">{message}</p>}
+        </div>
+        <div className={`rounded-full px-2 py-1 text-xs font-semibold ${connected ? "bg-green-500/20 text-green-300" : "bg-slate-700 text-slate-300"}`}>
+          {connected ? "Connected" : pending ? "Waiting" : "Off"}
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={onConnect}
+          disabled={loading}
+          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+        >
+          {loading ? "Opening..." : connected ? "Reconnect Telegram" : "Open Telegram"}
+        </button>
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={loading}
+          className="rounded-md border border-slate-600 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-60"
+        >
+          Check status
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FormInput({
   label,
   value,
   onChange,
   placeholder,
+  help,
   type = "text",
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  help?: string;
   type?: string;
 }) {
   return (
@@ -344,6 +510,7 @@ function FormInput({
         placeholder={placeholder}
         className="w-full p-3 rounded-md border border-gray-300 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2"
       />
+      {help && <p className="mt-1 text-xs text-slate-400">{help}</p>}
     </div>
   );
 }

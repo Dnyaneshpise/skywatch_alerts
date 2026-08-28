@@ -1,5 +1,9 @@
 import { FlightData } from '@/types/flight';
 
+function numericValue(value: unknown, fallback = 0) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
 export async function fetchNearbyFlights(
   lat: number,
   lon: number,
@@ -26,12 +30,16 @@ export async function fetchNearbyFlights(
       callsign: flight.flight?.trim() || 'N/A',
       latitude: flight.lat,
       longitude: flight.lon,
-      altitude: flight.alt_baro,
-      velocity: flight.gs,
-      heading: flight.track,
+      altitude: numericValue(flight.alt_baro),
+      velocity: numericValue(flight.gs),
+      heading: numericValue(flight.track),
+      aircraftType: flight.t,
       category: flight.category,
+      registration: flight.r,
       squawk: flight.squawk,
-      timestamp: flight.timestamp
+      emergency: flight.emergency,
+      verticalRate: numericValue(flight.baro_rate),
+      timestamp: flight.seen_pos ? Date.now() - flight.seen_pos * 1000 : Date.now()
     })) || [];
   } catch (error) {
     console.error('Flight API Error:', error);
