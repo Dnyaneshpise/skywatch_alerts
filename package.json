@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "alerts:watch": "node scripts/check-alerts.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

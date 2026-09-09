@@ -2,10 +2,11 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { useMap } from "react-leaflet";
 import useLocation from "@/hooks/useLocation";
 import { fetchNearbyFlights } from "@/lib/flights/adsbClient";
 import { FlightData } from "@/types/flight";
-import { defaultCoords, generateDynamicSeedData } from "@/lib/flights/seedData";
+import { defaultCoords } from "@/lib/flights/seedData";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -32,15 +33,13 @@ const Marker = dynamic(
   { ssr: false },
 );
 
-const Popup = dynamic(
-  () => import("react-leaflet").then((mod) => mod.Popup),
-  { ssr: false },
-);
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+  ssr: false,
+});
 
-const MapAutoCenter = dynamic(
-  () => import("@/components/map/MapAutoCenter"),
-  { ssr: false },
-);
+const MapAutoCenter = dynamic(() => import("@/components/map/MapAutoCenter"), {
+  ssr: false,
+});
 
 const aircraftCategoryLabels: Record<string, string> = {
   A1: "Light",
@@ -68,7 +67,9 @@ function aircraftStyle(flight: FlightData) {
   }
 
   if (flight.category?.startsWith("B")) {
-    const label = aircraftCategoryLabels[flight.category]?.slice(0, 3).toUpperCase() || "SPC";
+    const label =
+      aircraftCategoryLabels[flight.category]?.slice(0, 3).toUpperCase() ||
+      "SPC";
     return { color: "#22c55e", label };
   }
 
@@ -81,13 +82,18 @@ function aircraftStyle(flight: FlightData) {
   }
 
   if (flight.aircraftType) {
-    return { color: "#38bdf8", label: flight.aircraftType.slice(0, 3).toUpperCase() };
+    return {
+      color: "#38bdf8",
+      label: flight.aircraftType.slice(0, 3).toUpperCase(),
+    };
   }
 
   return { color: "#38bdf8", label: "JET" };
 }
 
 function createAircraftIcon(flight: FlightData) {
+  // Leaflet must load only in the browser because it accesses window during initialization.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const L = require("leaflet");
   const style = aircraftStyle(flight);
   const heading = Number.isFinite(flight.heading) ? flight.heading : 0;
@@ -107,7 +113,9 @@ function createAircraftIcon(flight: FlightData) {
 }
 
 function formatNumber(value: number | undefined, fallback = "N/A") {
-  return typeof value === "number" && Number.isFinite(value) ? Math.round(value).toString() : fallback;
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.round(value).toString()
+    : fallback;
 }
 
 export default function LiveRadar() {
@@ -115,7 +123,6 @@ export default function LiveRadar() {
   const [flights, setFlights] = useState<FlightData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [usingSeedData, setUsingSeedData] = useState(false);
 
   const mapCenter: [number, number] = [
     coords?.latitude || defaultCoords.latitude,
@@ -140,16 +147,13 @@ export default function LiveRadar() {
 
         if (flightsData.length > 0) {
           setFlights(flightsData);
-          setUsingSeedData(false);
         } else {
-          setFlights(generateDynamicSeedData());
-          setUsingSeedData(true);
+          setFlights([]);
         }
       } catch {
         if (mounted) {
-          setFlights(generateDynamicSeedData());
-          setUsingSeedData(true);
-          setError(null);
+          setFlights([]);
+          setError("Live flight data is temporarily unavailable.");
         }
       } finally {
         if (mounted) {
@@ -171,7 +175,9 @@ export default function LiveRadar() {
     return (
       <div className="h-[600px] flex items-center justify-center bg-yellow-50 rounded-lg">
         <div className="text-center p-6 max-w-md">
-          <div className="text-yellow-600 font-bold text-xl mb-2">Flight Data Error</div>
+          <div className="text-yellow-600 font-bold text-xl mb-2">
+            Flight Data Error
+          </div>
           <p className="text-gray-700 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
@@ -186,15 +192,10 @@ export default function LiveRadar() {
 
   return (
     <div className="w-full min-h-[300px] h-[60vh] sm:h-[70vh] md:h-[600px] relative rounded-lg overflow-hidden border z-0">
-      {usingSeedData && (
-        <div className="absolute top-2 left-2 z-20 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-3 py-1 rounded-full text-sm font-medium">
-          Demo Data
-        </div>
-      )}
-
       {!coords && (
         <div className="absolute top-2 right-2 z-20 max-w-xs bg-slate-900/90 text-slate-100 px-3 py-2 rounded-md text-xs shadow-lg">
-          {locationError || "Detecting location. Showing demo location for now."}
+          {locationError ||
+            "Detecting location. Showing demo location for now."}
         </div>
       )}
 
@@ -209,6 +210,7 @@ export default function LiveRadar() {
 
       <MapContainer center={mapCenter} zoom={12} className="h-full">
         <MapAutoCenter center={mapCenter} enabled={!!coords} />
+        <MapFlightBounds flights={flights} center={mapCenter} />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="&copy; OpenStreetMap contributors"
@@ -221,7 +223,8 @@ export default function LiveRadar() {
                 {coords ? "Your Location" : "Demo Location"}
               </div>
               <div className="text-gray-700">
-                {formatted || `${defaultCoords.latitude.toFixed(4)}, ${defaultCoords.longitude.toFixed(4)}`}
+                {formatted ||
+                  `${defaultCoords.latitude.toFixed(4)}, ${defaultCoords.longitude.toFixed(4)}`}
               </div>
             </div>
           </Popup>
@@ -238,19 +241,37 @@ export default function LiveRadar() {
                 <div className="font-bold text-lg">{flight.callsign}</div>
                 <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
                   <div>Type:</div>
-                  <div className="font-mono">{flight.aircraftType || "Unknown"}</div>
+                  <div className="font-mono">
+                    {flight.aircraftType || "Unknown"}
+                  </div>
                   <div>Category:</div>
-                  <div className="font-mono">{flight.category ? `${flight.category} (${aircraftCategoryLabels[flight.category] || "Unknown"})` : "N/A"}</div>
+                  <div className="font-mono">
+                    {flight.category
+                      ? `${flight.category} (${aircraftCategoryLabels[flight.category] || "Unknown"})`
+                      : "N/A"}
+                  </div>
                   <div>Altitude:</div>
-                  <div className="font-mono">{formatNumber(flight.altitude)} ft</div>
+                  <div className="font-mono">
+                    {formatNumber(flight.altitude)} ft
+                  </div>
                   <div>Speed:</div>
-                  <div className="font-mono">{formatNumber(flight.velocity)} kts</div>
+                  <div className="font-mono">
+                    {formatNumber(flight.velocity)} kts
+                  </div>
                   <div>Heading:</div>
-                  <div className="font-mono">{formatNumber(flight.heading)} deg</div>
+                  <div className="font-mono">
+                    {formatNumber(flight.heading)} deg
+                  </div>
                   <div>Vertical:</div>
-                  <div className="font-mono">{typeof flight.verticalRate === "number" ? `${formatNumber(flight.verticalRate)} fpm` : "N/A"}</div>
+                  <div className="font-mono">
+                    {typeof flight.verticalRate === "number"
+                      ? `${formatNumber(flight.verticalRate)} fpm`
+                      : "N/A"}
+                  </div>
                   <div>Reg:</div>
-                  <div className="font-mono">{flight.registration || "N/A"}</div>
+                  <div className="font-mono">
+                    {flight.registration || "N/A"}
+                  </div>
                   <div>Squawk:</div>
                   <div className="font-mono">{flight.squawk || "N/A"}</div>
                   <div>ICAO24:</div>
@@ -260,7 +281,36 @@ export default function LiveRadar() {
             </Popup>
           </Marker>
         ))}
+        {!loading && flights.length === 0 && !error && (
+          <div className="absolute top-2 left-2 z-20 rounded-md bg-slate-900/90 px-3 py-2 text-xs text-slate-100 shadow-lg">
+            No live aircraft detected in the current area.
+          </div>
+        )}
       </MapContainer>
     </div>
   );
+}
+
+function MapFlightBounds({
+  flights,
+  center,
+}: {
+  flights: FlightData[];
+  center: [number, number];
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (flights.length === 0) return;
+
+    const bounds = [
+      center,
+      ...flights.map(
+        (flight) => [flight.latitude, flight.longitude] as [number, number],
+      ),
+    ];
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12, animate: false });
+  }, [center, flights, map]);
+
+  return null;
 }

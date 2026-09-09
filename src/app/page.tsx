@@ -5,8 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import LiveRadar from "@/components/map/LiveRadar";
 import { useAuth } from "@/hooks/UseAuth";
-import { auth } from "@/lib/flights/firebase";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { signInWithGoogle } from "@/lib/auth/googleSignIn";
 import { LogIn, ArrowUp } from "lucide-react"; // <-- Added ArrowUp
 import { FaChartLine, FaBell } from "react-icons/fa";
 import StarfieldBackground from '@/components/StarfieldBackground';
@@ -19,9 +18,8 @@ export default function Home() {
 
   // Handle Google Sign-In
   const handleGoogleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      await signInWithGoogle();
     } catch (error) {
       console.error("Google sign-in error:", error);
     }

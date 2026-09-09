@@ -8,7 +8,8 @@ import { usePathname } from 'next/navigation';
 import { Radar, ShieldAlert, Info, Menu, X, Wind, LayoutDashboard, Mail, LogIn, LogOut, User as UserIcon, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/hooks/UseAuth';
 import { auth } from '@/lib/flights/firebase';
-import { signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
+import { signInWithGoogle } from '@/lib/auth/googleSignIn';
 
 // Fixed: Removed the duplicate Profile link from navLinks
 const allNavLinks = [
@@ -56,9 +57,8 @@ export default function Navbar() {
   };
 
   const handleGoogleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      await signInWithGoogle();
     } catch (error) {
       console.error("Google sign-in error:", error);
     }

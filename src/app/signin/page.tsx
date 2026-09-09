@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/flights/firebase';
 import { useAuth } from '@/hooks/UseAuth';
+import { signInWithGoogle } from '@/lib/auth/googleSignIn';
 import { Mail, Lock, LogIn, ArrowRight, Shield, Eye, EyeOff } from 'lucide-react';
 
 export default function SignInPage() {
@@ -48,8 +49,7 @@ export default function SignInPage() {
     setMessage('');
 
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithGoogle();
       router.push('/');
     } catch (error: any) {
       setError(error.message || 'Failed to sign in with Google');

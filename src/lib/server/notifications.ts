@@ -1,5 +1,9 @@
 import type { FlightAlert } from "@/types/alert";
-import { firestoreRequest, fromFirestoreFields, type FirestoreDocument } from "@/lib/server/firebaseRest";
+import {
+  firestoreRequest,
+  fromFirestoreFields,
+  type FirestoreDocument,
+} from "@/lib/server/firebaseRest";
 
 type MatchedFlight = {
   flight?: string;
@@ -9,32 +13,52 @@ type MatchedFlight = {
   lon: number;
 };
 
-export async function sendAlertNotification(alert: FlightAlert, flights: MatchedFlight[]) {
+export async function sendAlertNotification(
+  alert: FlightAlert,
+  flights: MatchedFlight[],
+) {
   const subject = `SkyWatch alert: ${flights.length} aircraft within ${alert.distance} km`;
   const text = [
     `${alert.name} matched ${flights.length} aircraft near ${alert.lat}, ${alert.lon}.`,
-    `Alert type: ${alert.type}`,
+    `Aircraft types: ${(alert.aircraftTypes?.length ? alert.aircraftTypes : [alert.type]).join(", ")}`,
+    `Notification channels: ${(alert.notificationChannels?.length ? alert.notificationChannels : ["email"]).join(", ")}`,
     `Radius: ${alert.distance} km`,
     "",
-    ...flights.slice(0, 10).map((flight) => {
+    ...flights.map((flight) => {
       const ident = flight.flight || flight.callsign || "Unknown aircraft";
       return `- ${ident} at ${flight.lat}, ${flight.lon}${flight.type ? ` (${flight.type})` : ""}`;
     }),
-  ].join("\n");
+  ]
+    .join("\n")
+    .slice(0, 3900);
   const sentProviders: string[] = [];
 
   const telegramChatId = await getTelegramChatId(alert);
 
-  if (process.env.TELEGRAM_BOT_TOKEN && telegramChatId) {
-    const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: telegramChatId,
-        text: `${subject}\n\n${text}`,
-        disable_web_page_preview: true,
-      }),
-    });
+  const channels = alert.notificationChannels?.length
+    ? alert.notificationChannels
+    : [
+        ...(alert.email ? ["email" as const] : []),
+        ...(telegramChatId ? ["telegram" as const] : []),
+      ];
+
+  if (
+    channels.includes("telegram") &&
+    process.env.TELEGRAM_BOT_TOKEN &&
+    telegramChatId
+  ) {
+    const response = await fetch(
+      `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: `${subject}\n\n${text}`,
+          disable_web_page_preview: true,
+        }),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Telegram failed: ${await response.text()}`);
@@ -43,7 +67,12 @@ export async function sendAlertNotification(alert: FlightAlert, flights: Matched
     sentProviders.push("telegram");
   }
 
-  if (process.env.RESEND_API_KEY && process.env.ALERT_FROM_EMAIL && alert.email) {
+  if (
+    channels.includes("email") &&
+    process.env.RESEND_API_KEY &&
+    process.env.ALERT_FROM_EMAIL &&
+    alert.email
+  ) {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -81,14 +110,18 @@ export async function sendAlertNotification(alert: FlightAlert, flights: Matched
     return "webhook";
   }
 
-  throw new Error("Configure TELEGRAM_BOT_TOKEN, RESEND_API_KEY + ALERT_FROM_EMAIL, or ALERT_WEBHOOK_URL to send real alerts");
+  throw new Error(
+    "Configure TELEGRAM_BOT_TOKEN, RESEND_API_KEY + ALERT_FROM_EMAIL, or ALERT_WEBHOOK_URL to send real alerts",
+  );
 }
 
 async function getTelegramChatId(alert: FlightAlert) {
   if (alert.telegramChatId) return alert.telegramChatId;
 
   try {
-    const document = await firestoreRequest<FirestoreDocument>(`users/${alert.userId}/integrations/telegram`);
+    const document = await firestoreRequest<FirestoreDocument>(
+      `users/${alert.userId}/integrations/telegram`,
+    );
     const data = fromFirestoreFields(document.fields);
     return typeof data.chatId === "string" ? data.chatId : "";
   } catch {

@@ -12,7 +12,8 @@ type FirestoreValue =
   | { doubleValue: number }
   | { booleanValue: boolean }
   | { timestampValue: string }
-  | { nullValue: null };
+  | { nullValue: null }
+  | { arrayValue: { values?: FirestoreValue[] } };
 
 type FirestoreDocument = {
   name: string;
@@ -91,6 +92,16 @@ export async function verifyFirebaseIdToken(idToken: string) {
 export function toFirestoreFields(input: Record<string, unknown>) {
   return Object.entries(input).reduce<Record<string, FirestoreValue>>((fields, [key, value]) => {
     if (value === undefined) return fields;
+    if (Array.isArray(value)) {
+      fields[key] = {
+        arrayValue: {
+          values: value
+            .map((item) => toFirestoreValue(item))
+            .filter((item): item is FirestoreValue => Boolean(item)),
+        },
+      };
+      return fields;
+    }
     if (typeof value === "string") {
       fields[key] = isIsoDate(value) ? { timestampValue: value } : { stringValue: value };
       return fields;
@@ -118,8 +129,37 @@ export function fromFirestoreFields(fields: Record<string, FirestoreValue> = {})
     if ("booleanValue" in value) data[key] = value.booleanValue;
     if ("timestampValue" in value) data[key] = value.timestampValue;
     if ("nullValue" in value) data[key] = null;
+    if ("arrayValue" in value) {
+      data[key] = (value.arrayValue.values ?? []).map(fromFirestoreValue);
+    }
     return data;
   }, {});
+}
+
+function toFirestoreValue(value: unknown): FirestoreValue | null {
+  if (typeof value === "string") {
+    return isIsoDate(value) ? { timestampValue: value } : { stringValue: value };
+  }
+  if (typeof value === "number") {
+    return Number.isInteger(value) ? { integerValue: String(value) } : { doubleValue: value };
+  }
+  if (typeof value === "boolean") {
+    return { booleanValue: value };
+  }
+  if (value === null) {
+    return { nullValue: null };
+  }
+  return null;
+}
+
+function fromFirestoreValue(value: FirestoreValue) {
+  if ("stringValue" in value) return value.stringValue;
+  if ("integerValue" in value) return Number(value.integerValue);
+  if ("doubleValue" in value) return value.doubleValue;
+  if ("booleanValue" in value) return value.booleanValue;
+  if ("timestampValue" in value) return value.timestampValue;
+  if ("arrayValue" in value) return (value.arrayValue.values ?? []).map(fromFirestoreValue);
+  return null;
 }
 
 export function documentId(documentName: string) {

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { Circle, CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { useEffect, useMemo } from "react";
+import { Circle, Marker, MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
 
 type AlertLocationPickerProps = {
   lat: number;
@@ -20,19 +20,46 @@ export default function AlertLocationPicker({
   onLocationChange,
   onRadiusChange,
 }: AlertLocationPickerProps) {
-  const center: [number, number] = [lat, lon];
+  const center = useMemo<[number, number]>(() => [lat, lon], [lat, lon]);
+
+  const useCurrentLocation = () => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        onLocationChange({
+          lat: Number(position.coords.latitude.toFixed(6)),
+          lon: Number(position.coords.longitude.toFixed(6)),
+        });
+      },
+      undefined,
+      {
+        enableHighAccuracy: false,
+        maximumAge: 5 * 60 * 1000,
+        timeout: 15000,
+      },
+    );
+  };
 
   return (
     <div className="space-y-4 sm:col-span-2">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <label className="block text-sm font-medium mb-1">Alert Area</label>
-          <p className="text-sm text-slate-400">Click the map to set the center, then adjust the radius.</p>
+          <p className="text-sm text-slate-400">Click the map, drag the pin, or use your current location.</p>
         </div>
         <div className="rounded-md bg-slate-900/70 px-3 py-2 text-xs text-slate-200">
-          {lat.toFixed(4)}, {lon.toFixed(4)} · {radiusKm} km
+          {lat.toFixed(4)}, {lon.toFixed(4)} - {radiusKm} km
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={useCurrentLocation}
+        className="rounded-md border border-slate-600 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800"
+      >
+        Use my current location
+      </button>
 
       <div className="h-[360px] overflow-hidden rounded-lg border border-slate-700 z-0">
         <MapContainer center={center} zoom={8} className="h-full w-full">
@@ -41,7 +68,7 @@ export default function AlertLocationPicker({
             attribution="&copy; OpenStreetMap contributors"
           />
           <MapClickHandler onLocationChange={onLocationChange} />
-          <MapCenterSync center={center} radiusKm={radiusKm} />
+          <MapCenterSync center={center} />
           <Circle
             center={center}
             radius={radiusKm * 1000}
@@ -51,15 +78,26 @@ export default function AlertLocationPicker({
               fillOpacity: 0.12,
               weight: 2,
             }}
+            eventHandlers={{
+              click(event) {
+                onLocationChange({
+                  lat: Number(event.latlng.lat.toFixed(6)),
+                  lon: Number(event.latlng.lng.toFixed(6)),
+                });
+              },
+            }}
           />
-          <CircleMarker
-            center={center}
-            radius={7}
-            pathOptions={{
-              color: "#ffffff",
-              fillColor: "#0284c7",
-              fillOpacity: 1,
-              weight: 2,
+          <Marker
+            position={center}
+            draggable
+            eventHandlers={{
+              dragend(event) {
+                const next = event.target.getLatLng();
+                onLocationChange({
+                  lat: Number(next.lat.toFixed(6)),
+                  lon: Number(next.lng.toFixed(6)),
+                });
+              },
             }}
           />
         </MapContainer>
@@ -106,18 +144,13 @@ function MapClickHandler({
   return null;
 }
 
-function MapCenterSync({
-  center,
-  radiusKm,
-}: {
-  center: [number, number];
-  radiusKm: number;
-}) {
+function MapCenterSync({ center }: { center: [number, number] }) {
   const map = useMap();
 
   useEffect(() => {
-    map.setView(center, radiusKm > 150 ? 6 : radiusKm > 50 ? 8 : 10, { animate: true });
-  }, [center, map, radiusKm]);
+    map.invalidateSize();
+    map.setView(center, map.getZoom(), { animate: true });
+  }, [center, map]);
 
   return null;
 }
