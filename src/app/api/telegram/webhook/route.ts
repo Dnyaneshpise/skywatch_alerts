@@ -81,10 +81,10 @@ export async function POST(request: Request) {
     }
 
     const username =
-      update.message.from?.username || update.message.chat?.username || "";
+      update.message?.from?.username || update.message?.chat?.username || "";
     const displayName = [
-      update.message.from?.first_name,
-      update.message.from?.last_name,
+      update.message?.from?.first_name,
+      update.message?.from?.last_name,
     ]
       .filter(Boolean)
       .join(" ");
