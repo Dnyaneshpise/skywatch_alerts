@@ -17,7 +17,7 @@ type RawAircraft = {
   seen_pos?: number;
 };
 
-function numericValue(value: unknown, fallback = 0) {
+function numericValue(value: unknown, fallback = 0): number {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
@@ -40,11 +40,19 @@ export async function fetchNearbyFlights(
       throw new Error(errorData.error || `HTTP Error ${response.status}`);
     }
 
-    const data = (await response.json()) as { ac?: RawAircraft[] };
+    const data = (await response.json()) as {
+      ac?: RawAircraft[];
+    };
 
     return (data.ac ?? [])
       .filter(
-        (flight) =>
+        (
+          flight,
+        ): flight is RawAircraft & {
+          hex: string;
+          lat: number;
+          lon: number;
+        } =>
           typeof flight.hex === "string" &&
           typeof flight.lat === "number" &&
           Number.isFinite(flight.lat) &&
@@ -59,15 +67,16 @@ export async function fetchNearbyFlights(
         altitude: numericValue(flight.alt_baro),
         velocity: numericValue(flight.gs),
         heading: numericValue(flight.track),
-        aircraftType: flight.t,
-        category: flight.category,
-        registration: flight.r,
-        squawk: flight.squawk,
-        emergency: flight.emergency,
+        aircraftType: flight.t ?? "Unknown",
+        category: flight.category ?? "Unknown",
+        registration: flight.r ?? "Unknown",
+        squawk: flight.squawk ?? "Unknown",
+        emergency: flight.emergency ?? "none",
         verticalRate: numericValue(flight.baro_rate),
-        timestamp: flight.seen_pos
-          ? Date.now() - flight.seen_pos * 1000
-          : Date.now(),
+        timestamp:
+          typeof flight.seen_pos === "number" && Number.isFinite(flight.seen_pos)
+            ? Date.now() - flight.seen_pos * 1000
+            : Date.now(),
       }));
   } catch (error) {
     console.error("Flight API Error:", error);

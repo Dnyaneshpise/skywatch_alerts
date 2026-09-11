@@ -56,9 +56,9 @@ export async function GET(request: Request) {
           typeof flight.lon === "number" &&
           distanceInKm(latitude, longitude, flight.lat, flight.lon) <=
             radiusKm &&
-          !aircraft.has(flight.hex)
+          !aircraft.has(flight.hex as string)
         )
-          aircraft.set(flight.hex, flight);
+          aircraft.set(flight.hex as string, flight);
       }
     }
 

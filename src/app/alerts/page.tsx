@@ -224,18 +224,26 @@ export default function AlertsPage() {
   const toggleAircraftType = (type: AlertType) => {
     setNewAlert((current) => {
       if (type === "any") {
-        return { ...current, type: "any", aircraftTypes: ["any"] };
+        return {
+          ...current,
+          type: "any" as AlertType,
+          aircraftTypes: ["any"] as AlertType[],
+        };
       }
 
       const withoutAny = current.aircraftTypes.filter((item) => item !== "any");
       const nextTypes = withoutAny.includes(type)
         ? withoutAny.filter((item) => item !== type)
         : [...withoutAny, type];
-      const aircraftTypes = nextTypes.length > 0 ? nextTypes : ["any"];
+      const aircraftTypes = (
+        nextTypes.length > 0 ? nextTypes : ["any"]
+      ) as AlertType[];
 
       return {
         ...current,
-        type: aircraftTypes.includes("any") ? "any" : aircraftTypes[0],
+        type: (aircraftTypes.includes("any")
+          ? "any"
+          : aircraftTypes[0]) as AlertType,
         aircraftTypes,
       };
     });
