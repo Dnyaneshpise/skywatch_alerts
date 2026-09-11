@@ -5,8 +5,14 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { FaFighterJet, FaPlane, FaUser } from "react-icons/fa";
-import { Loader2 } from "lucide-react";
+import {
+  FaFighterJet,
+  FaPlane,
+  FaUser,
+  FaBell,
+  FaPaperPlane,
+} from "react-icons/fa";
+import { Loader2, MapPin } from "lucide-react";
 import { useAuth } from "@/hooks/UseAuth";
 import type {
   FlightAlert,
@@ -82,6 +88,25 @@ export default function AlertsPage() {
       router.push("/signin?next=/alerts");
     }
   }, [authLoading, router, user]);
+
+  // Get user's current location for default alert location
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setNewAlert((current) => ({
+            ...current,
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          }));
+        },
+        () => {
+          // Use default location if geolocation fails
+          console.log("Using default location");
+        },
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -342,6 +367,10 @@ export default function AlertsPage() {
     setShowForm(true);
   };
 
+  const isAlertExpired = (expiresAt: string): boolean => {
+    return new Date(expiresAt) < new Date();
+  };
+
   const deleteAlert = async (id: string) => {
     if (!user) return;
 
@@ -488,6 +517,24 @@ export default function AlertsPage() {
                   setNewAlert({ ...newAlert, distance })
                 }
               />
+              <button
+                type="button"
+                onClick={() => {
+                  if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                      setNewAlert((current) => ({
+                        ...current,
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude,
+                      }));
+                    });
+                  }
+                }}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+              >
+                <MapPin className="w-4 h-4" />
+                Use Current Location
+              </button>
               <NumberInput
                 label="Notify Cooldown (minutes)"
                 value={newAlert.notifyBefore}
@@ -540,102 +587,131 @@ export default function AlertsPage() {
             </p>
           )}
 
-          {filteredAlerts.map((alert) => (
-            <motion.div
-              key={alert.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className={`p-4 rounded-lg border shadow-md transition-colors duration-300 ${
-                alert.active
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                  : "border-gray-200 bg-white dark:bg-gray-800"
-              }`}
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white flex items-center">
-                    {renderIcon(alert.type)}
-                    {alert.name}
-                  </h3>
-                  <div className="text-sm text-gray-700 dark:text-gray-400 mt-2 space-y-1">
-                    <p>
-                      Aircraft:{" "}
-                      {(alert.aircraftTypes ?? [alert.type])
-                        .map(formatLabel)
-                        .join(", ")}
-                    </p>
-                    <p>
-                      Notifications:{" "}
-                      {(
-                        alert.notificationChannels ??
-                        (alert.telegramChatId ? ["telegram"] : ["email"])
-                      )
-                        .map(formatLabel)
-                        .join(", ")}
-                    </p>
-                    <p>
-                      Alert when within {alert.distance} km of{" "}
-                      {alert.lat.toFixed(4)}, {alert.lon.toFixed(4)}
-                    </p>
-                    <p>
-                      Cooldown: {alert.notifyBefore} minutes between
-                      notifications
-                    </p>
-                    <p>
-                      Expires: {new Date(alert.expiresAt).toLocaleDateString()}
-                    </p>
-                    {alert.email && <p>Email: {alert.email}</p>}
-                    {alert.telegramChatId && (
-                      <p>Telegram: {alert.telegramChatId}</p>
-                    )}
-                    {alert.lastTriggeredAt && (
+          {filteredAlerts.map((alert) => {
+            const expired = isAlertExpired(alert.expiresAt);
+            return (
+              <motion.div
+                key={alert.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`p-4 rounded-lg border shadow-md transition-colors duration-300 ${
+                  expired
+                    ? "border-red-500 bg-red-50 dark:bg-red-900/20 opacity-75"
+                    : alert.active
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                      : "border-gray-200 bg-white dark:bg-gray-800"
+                }`}
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-900 dark:text-white flex items-center">
+                        {renderIcon(alert.type)}
+                        {alert.name}
+                      </h3>
+                      {expired && (
+                        <span className="px-2 py-1 text-xs font-bold bg-red-500 text-white rounded-full">
+                          EXPIRED
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-700 dark:text-gray-400 mt-2 space-y-1">
                       <p>
-                        Last sent:{" "}
-                        {new Date(alert.lastTriggeredAt).toLocaleString()}
+                        Aircraft:{" "}
+                        {(alert.aircraftTypes ?? [alert.type])
+                          .map(formatLabel)
+                          .join(", ")}
                       </p>
-                    )}
+                      <p>
+                        Notifications:{" "}
+                        {(
+                          alert.notificationChannels ??
+                          (alert.telegramChatId ? ["telegram"] : ["email"])
+                        )
+                          .map(formatLabel)
+                          .join(", ")}
+                      </p>
+                      <p>
+                        Alert when within {alert.distance} km of{" "}
+                        {alert.lat.toFixed(4)}, {alert.lon.toFixed(4)}
+                      </p>
+                      <p>
+                        Cooldown: {alert.notifyBefore} minutes between
+                        notifications
+                      </p>
+                      <p
+                        className={
+                          expired
+                            ? "font-semibold text-red-600 dark:text-red-400"
+                            : ""
+                        }
+                      >
+                        Expires:{" "}
+                        {new Date(alert.expiresAt).toLocaleDateString()}
+                        {expired && " (EXPIRED)"}
+                      </p>
+                      {alert.email && <p>Email: {alert.email}</p>}
+                      {alert.telegramChatId && (
+                        <p>Telegram: {alert.telegramChatId}</p>
+                      )}
+                      {alert.lastTriggeredAt && (
+                        <p>
+                          Last sent:{" "}
+                          {new Date(alert.lastTriggeredAt).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={alert.active}
-                      onChange={() => {
-                        setError("");
-                        updateAlert({ ...alert, active: !alert.active }).catch(
-                          (err) =>
+                  <div className="flex items-center space-x-4">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={alert.active}
+                        disabled={expired}
+                        onChange={() => {
+                          setError("");
+                          updateAlert({
+                            ...alert,
+                            active: !alert.active,
+                          }).catch((err) =>
                             setError(
                               err instanceof Error
                                 ? err.message
                                 : "Failed to update alert",
                             ),
-                        );
-                      }}
-                    />
-                    <div className="w-12 h-6 bg-gray-300 rounded-full relative peer-checked:bg-blue-600 transition-colors duration-300">
-                      <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-6" />
-                    </div>
-                  </label>
-                  <button
-                    type="button"
-                    className="font-medium text-blue-600 hover:underline"
-                    onClick={() => editAlert(alert)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="font-medium text-red-600 hover:underline"
-                    onClick={() => deleteAlert(alert.id)}
-                  >
-                    Delete
-                  </button>
+                          );
+                        }}
+                      />
+                      <div
+                        className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${
+                          expired
+                            ? "bg-red-300 peer-checked:bg-red-600 cursor-not-allowed"
+                            : "bg-gray-300 peer-checked:bg-blue-600"
+                        }`}
+                      >
+                        <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-6" />
+                      </div>
+                    </label>
+                    <button
+                      type="button"
+                      className="font-medium text-blue-600 hover:underline"
+                      onClick={() => editAlert(alert)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="font-medium text-red-600 hover:underline"
+                      onClick={() => deleteAlert(alert.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
         <div className="mt-8">
@@ -703,15 +779,37 @@ function NotificationChannelSelector({
   selectedChannels: NotificationChannel[];
   onToggle: (channel: NotificationChannel) => void;
 }) {
-  const options: Array<{ value: NotificationChannel; label: string }> = [
-    { value: "email", label: "Email" },
-    { value: "telegram", label: "Telegram" },
+  const options: Array<{
+    value: NotificationChannel;
+    label: string;
+    description: string;
+    icon: React.ReactNode;
+  }> = [
+    {
+      value: "email",
+      label: "Email",
+      description: "Get alerts via email",
+      icon: (
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+        </svg>
+      ),
+    },
+    {
+      value: "telegram",
+      label: "Telegram",
+      description: "Instant message alerts",
+      icon: <FaPaperPlane className="w-5 h-5" />,
+    },
   ];
 
   return (
     <fieldset>
-      <legend className="block text-sm font-medium mb-2">Notifications</legend>
-      <div className="grid grid-cols-2 gap-2">
+      <legend className="block text-sm font-medium mb-4 flex items-center gap-2">
+        <FaBell className="text-blue-500" />
+        Notifications
+      </legend>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {options.map((option) => {
           const selected = selectedChannels.includes(option.value);
 
@@ -720,13 +818,38 @@ function NotificationChannelSelector({
               key={option.value}
               type="button"
               onClick={() => onToggle(option.value)}
-              className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
+              className={`rounded-lg border-2 p-4 text-left transition-all duration-200 ${
                 selected
-                  ? "border-cyan-500 bg-cyan-500 text-slate-950"
-                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-300 dark:ring-blue-700"
+                  : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600"
               }`}
             >
-              {option.label}
+              <div className="flex items-start gap-3">
+                <div
+                  className={`mt-1 ${selected ? "text-blue-600 dark:text-blue-400" : "text-gray-400"}`}
+                >
+                  {option.icon}
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-sm text-gray-900 dark:text-white">
+                    {option.label}
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    {option.description}
+                  </div>
+                </div>
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    selected
+                      ? "border-blue-500 bg-blue-500"
+                      : "border-gray-300 dark:border-gray-600"
+                  }`}
+                >
+                  {selected && (
+                    <div className="w-2 h-2 bg-white rounded-full" />
+                  )}
+                </div>
+              </div>
             </button>
           );
         })}
